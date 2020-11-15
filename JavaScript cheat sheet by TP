@@ -1,0 +1,249 @@
+﻿JAVASCRIPT CHEAT SHEET
+
+
+"variavel string".charAt(1) - //Serve para mostrar a letra afeta ao index do numero entre parentisis.
+
+"variavel string".toFixed(2) - // Serve para reduzir um numero com muitas casas décimais ao numero de casas decimais entre (), no nosso caso, 2.
+
+"variavel string".indexOf("ago")) - //mostra do index t = 0, i = 1, "ago" = 2 da pralavra Tiago.
+
+"variavel string".substring(0,2)) - //O 2 não conta, ou seja, conta de 0 a 1, para contar o 2 teria que ser (0, 3) e por aí adiante. Ex: "Eu sou fixe." só apareceria a palavra Eu.
+
+"variavel string".toUpperCase() - //para por a string toda em maiusculas.
+
+"variavel string".toLowerCase() - //para por a string toda em minusculas.
+
+"variavel string".includes("o que queremos encontrar", 1 = em que index começar) - //para encontra a uma letra numa palavra, ou uma palavra numa frase, por exemplo: adelia.includes(ia) = true / let frase = "sou o tiago". frase.includes(tiago) = true
+
+"variavel string".length - // Mostra o numero de caracteres de uma string. Ex: Tiago.length = 5.
+
+Math.floor(variavel numero) - // tira as casas décimais.
+
+Math.ceil(variavel numero) - // arredonda sempre para o próximo numero mais alto.
+
+Math.round(variavel numero) - // arrenda o numero tendo em consideração as casas decimais. ex: 14,2 = 14 ou 14.6 = 15.
+
+"variavel numero".toFixed(2) - // Atribui/reduz para 2 casas decimais um numero. Ex: 45.435578985 passa a 45.44, ou se for apenas 45 passa a 45,00.
+
+newNumber - // esta função transforma o numero numa string. Ex: let newNumber = variavel numero. Console.log(newNumber) => String
+
+typeof - // Para se saber de que tipo é a variavel. Ex: console.log(typeof variavel).
+
+Math.random() * (max -min) + min - // Para tirar um numero aleatório entre de min ao max - 1. Se o minimo for 1 e o maximo 10, o numero aleatório será de 1 a 9, daí adicionar-se + o min que é 1.
+
+"variavel string".repeat(n) - // Para repetir a string n vezes.
+
+"variavel string".slice(start, end) - // tira parte da string começada em start e que acabar em end, por exemplo: let frase = "sou um bacano"   frase.slice(7, 13) = bacano
+
+Number() - // Serve para converter uma string num número.
+
+ARRAYS ===================================================================================
+
+Array Defenition: let myArray = [element1, element2, element3];
+
+"variavel array".push() - // Adicionar um item ao final do array.
+
+"variavel array".unshift() - // Adiciona um item ao principio do array.
+
+"variavel array".length - // Mostra o numero de itens do array.
+
+"variavel array".pop() - // Retira um item ao final do array.
+
+"variavel array".shift() - // Retira um item ao inicio do array.
+
+"varialvel string".split(" ") - // Transforma as palavras da string num array.
+
+"varialvel string".split("") - // Transforma as letras da string num array.
+
+"varialvel array".join(" ") - // Transforma um array numa string.
+
+"variavel array".forEach() - // é uma função que serve para iterar arrays. Ex: myArray.forEach((name) => console.log(item)) em que o item é um aragumento da função
+
+"variavel array".includes() - // Serve para encontrar uma palavra dentro do array.
+
+BOOLEANS =================================================================================
+
+Operator	Usage	         Description
+AND (&&)	expr1 && expr2	 The logical AND (&&) returns true if both operands are true; otherwise, returns false.
+OR  (||)	expr1 || expr2	 The logical OR (||) returns true if at least one of the operands is true; if both are false, returns false.
+NOT (!)	        !expr	     The logical NOT (!) returns the opposite boolean state. If the operand is true, returns false. If the operand is false, returns true.
+
+
+Expression           Description
+true	             Literal expression with value true.
+false	             Literal expression with value false.
+exp1 == exp2	     Compares two expressions. Returns true if the expressions have the same value.
+exp1 === exp2	     Compares two expressions. Returns true if the expressions have the same value and the same type of value.
+exp1 < exp2	         Compares two expressions. Returns true if the value of exp1 is smaller than the exp2.
+    >	             Compares two values. Return true if the first value is bigger than the second value.
+exp1 <= exp2	     Compares two expressions. Returns true if the value of exp1 is smaller or equal than the exp2 value.
+exp1 >= exp2	     Compares two expressions. Returns true if the value of exp1 is bigger or equal than the exp2 value.
+
+CONDITIONAL STATEMENTS ===================================================================
+
+if (condition1) {
+    // statements
+} else if (condition2) {
+    // statements
+} else if (condition3) {
+    // statements
+} else {
+    // if all above turn to be false, 
+    // this block of code will be executed
+}
+
+switch (expression) {
+  case value1:
+    // statements executed when the result of expression matches value1
+    break;
+  case value2:
+    // statements executed when the result of expression matches value2
+    break;
+  ...
+  case valueN:
+    // statements executed when the result of expression matches valueN
+    break;
+  default:
+    // statements executed when none of the values match the value of the expression
+    break;
+}
+
+FUNCTIONS ================================================================================
+
+Declarar uma função expression: let myFunction = function() {}
+
+declarar uma função declaration: function myFunction() {}
+
+Invocar/chamar a função: myFunction()
+
+callback function é uma função dentro de uma funçao: function eatDinner(){
+														setTimeout(function(){
+															console.log("Eating the dinner 🍽");
+														}, 1000)
+													}
+
+OBJECTS ==================================================================================
+
+Object Defenition: let myObject = {
+						key1: value1,
+						key2: value2,
+						key3: value3
+					}
+
+"variavel object".key - // O key deve ser o nome atribuído ao valor que queremos ver. Ex: let myObject = {cabelo: castanho} , para verificarmos a cor do cabelo fazer myObject.cabelo
+
+"variavel object".key = "value" - // Serve para adicionar/alterar uma key e um valor ao objecto.
+
+"key" in "variavel object" - // O in serve para sabermos se determinada key existe no nosso objecto. Se existir responde true, se não responde false.
+
+delete "variavel object".key - // Serve para eleminarmos uma key: value.
+
+Object.keys("variavel object") - // Serve para listar em forma de array as keys afetas ao nosso "variavel object".
+
+Objecto.values("variavel object" - // Serve para listar em forma de arrya as values afetas ao nosso "variavel object"
+
+for(let key in "variavel object){}; - // Serve para iterar as keys dentro de um objecto.
+
+
+HIGH ORDER FUNCTIONS ==================================================================================
+
+"variavel array".map((item) => {}) - // É uma especie de forEach que devolve sempre um array.
+
+"variavel array".reduce((accumulator, currentValue) => {}) - // O accumulator é onde vão acumular os valores do currentValue, sendo que na primeira iteração o accumulator é sempre o primeiro valor do array, a não ser que definamos após o ultimo }, 0) um poonto de partida, neste caso é o zero.
+
+"variavel array".filter(() => {}) - // Serve para filtrar o array, é como tivesse um if integrado. 
+
+"variavel array".sort(() => {}) - //
+
+LOOPS =================================================================================================
+
+While loop: 
+
+let i = 0
+while ( i < number or "variable.array".lenght ) {
+	console.log(i ou "variable.array".lenght[i]);
+	i++;
+}
+
+For loop:
+
+for ( i = 0; i < number or "variable.array".lenght; i ++) {
+	console.log(i ou "variable.array".lenght[i]);
+}
+
+TRUTHY AND FALSY ======================================================================================
+
+Falsy values: undefined, null, 0, '', NaN.
+
+Truthy Values: Not falsy values.
+
+
+DOM ======================================================================================
+
+Propriedade / Metodo				Descrição
+element.attributes					//Returns a NamedNodeMap of an element’s attributes
+element.childNodes					//Returns a collection of an element’s child nodes (including text and comment nodes)
+element.children					//Returns a collection of an element’s child element (excluding text and comment nodes)
+element.classList					//Returns an array with the class name(s) of an element
+element.className					//Sets or returns the value of the class attribute of an element
+element.clientHeight				//Returns the height of an element, including padding
+element.clientLeft					//Returns the width of the left border of an element
+element.clientTop					//Returns the width of the top border of an element
+element.clientWidth					//Returns the width of an element, including padding
+element.contains()					//Returns true if a node is a descendant of a node, otherwise false
+element.contentEditable				//Sets or returns whether the content of an element is editable or not
+element.firstChild					//Returns the first child node of an element
+element.firstElementChild			//Returns the first child element of an element
+element.focus()						//Gives focus to an element
+element.getAttribute()				//Returns the specified attribute value of an element node
+element.getAttributeNode()			//Returns the specified attribute node
+element.getElementsByClassName()	//Returns a collection of all child elements with the specified class name
+element.getElementsByTagName()		//Returns a collection of all child elements with the specified tag name
+element.getFeature()				//Returns an object which implements the APIs of a specified feature
+element.hasAttribute()				//Returns true if an element has the specified attribute, otherwise false
+element.hasAttributes()				//Returns true if an element has any attributes, otherwise false
+element.hasChildNodes()				//Returns true if an element has any child nodes, otherwise false
+element.id							//Sets or returns the value of the id attribute of an element
+element.isEqualNode()				//Checks if two elements are equal
+element.isSameNode()				//Checks if two elements are the same node
+element.lastChild					//Returns the last child node of an element
+element.lastElementChild			//Returns the last child element of an element
+element.nextSibling					//Returns the next node at the same node tree level
+element.nextElementSibling			//Returns the next element at the same node tree level
+element.nodeName					//Returns the name of a node
+element.nodeValue					//Sets or returns the value of a node
+element.offsetHeight				//Returns the height of an element, including padding, border and scrollbar
+element.offsetWidth					//Returns the width of an element, including padding, border and scrollbar
+element.offsetLeft					//Returns the horizontal offset position of an element
+element.offsetParent				//Returns the offset container of an element
+element.offsetTop					//Returns the vertical offset position of an element
+element.parentNode					//Returns the parent node of an element
+element.parentElement				//Returns the parent element node of an element
+element.previousSibling				//Returns the previous node at the same node tree level
+element.previousElementSibling		//Returns the previous element at the same node tree level
+element.querySelector()				//Returns the first child element that matches a specified CSS selector(s) of an element
+element.querySelectorAll()			//Returns all child elements that matches a specified CSS selector(s) of an element
+element.removeAttribute()			//Removes a specified attribute from an element
+element.removeAttributeNode()		//Removes a specified attribute node, and returns the removed node
+element.removeChild()				//Removes a child node from an element
+element.replaceChild()				//Replaces a child node in an element
+element.removeEventListener()		//Removes an event handler that has been attached with the addEventListener() method
+element.scrollHeight				//Returns the entire height of an element, including padding
+element.scrollLeft					//Sets or returns the number of pixels an element’s content is scrolled horizontally
+element.scrollTop					//Sets or returns the number of pixels an element’s content is scrolled vertically
+element.scrollWidth					//Returns the entire width of an element, including padding
+element.setAttribute()				//Sets or changes the specified attribute, to the specified value
+element.setAttributeNode()			//Sets or changes the specified attribute node
+element.style						//Sets or returns the value of the style attribute of an element
+element.tabIndex					//Sets or returns the value of the tab index attribute of an
+element.tagName						//Returns the tag name of an element
+element.textContent					//Sets or returns the textual content of a node and its
+element.title						//Sets or returns the value of the title attribute of an element
+element.toString()					//Converts an element to a string
+nodelist.item()						//Returns the node at the specified index in a NodeList
+nodelist.length						//Returns the number of nodes in a NodeList
+
+
+CANVAS ======================================================================================
+
+
