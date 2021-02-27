@@ -40,6 +40,15 @@ let number = 1987.8534;
 console.log("toFixed of the number 1987.8534 is =>", number.toFixed(1));
 // ==> result: 1987.9
 
+
+// Number.isInteger( numeroAleatorio ) // Serve para saber se numeroAleatorio, ou seja o numero detro de parentisis tem ou não casas decimais. Se tiver retorna false, se não retorna true.
+
+let numeroAleatorio = 1987.8534;
+
+console.log("Number.isInteger of the number 1987.8534 is =>", Number.isInteger(numeroAleatorio));
+// ==> result: false
+
+
 //--------------------------------------------------------------------
 // indexOf() // Mostra o index do conjunto de letras colocadas entre (). A = 0, d = 1, e = 2, "lia" = 3 da pralavra Adélia.
 
@@ -214,11 +223,15 @@ let novaFrase = frase.replace("metodo", "string prototype");
 console.log(novaFrase);
 // resultado ==> Vou usar o string prototype replace(), vais gostar.
 
+
+
 // ARRAYS ===========================================================================================================================================================
+
 
 // Array Defenition: let myArray = [element1, element2, element3];
 
 // Multi-dimensional array: let myMultiArray = [[1,2,3], [4,5,6], [7,8,9]]
+
 
 //push() - // Adicionar um item ao final do array.
 
@@ -268,7 +281,7 @@ console.log(myArray2);
 // result ==> [ 'item2', 'item3' ]
 
 //--------------------------------------------------------------------
-//splice(index, nº de items a eliminar a partir do index definido, item que queremos substituir pelo que eliminamos) - // Retira um item à escolha no array
+//splice(index, nº de items a eliminar/adicionar a partir do index definido, item que queremos substituir pelo que eliminamos) - // Retira um item à escolha no array
 
 let myArray3 = ["item1", "item2", "item3", "item4", "item5"];
 let myArray4 = ["item1", "item2", "item3", "item4", "item5"];
@@ -286,6 +299,10 @@ console.log(myArray3);
 
 console.log(myArray4);
 // result ==> [ 'item1', 'item2', 'item4', 'item10' ]
+
+let newItem2 = myArray4.splice(4, 0, "item20");
+console.log(myArray4);
+// result ==> [ 'item1', 'item2', 'item3', 'item4', 'item20', 'item10' ]
 
 //--------------------------------------------------------------------
 //split(" ") - // Transforma as palavras da string num array.
@@ -396,7 +413,7 @@ let numbersSort = [4, 2, 5, 10, 3];
 numbersSort.sort((a, b) => b - a);
 
 console.log("Os numeros ordenados por sort() são:", numbersSort);
-// result ==> 5, 4, 3, 2, 10
+// result ==> 10, 5, 4, 3, 2
 
 let things = ["word", "Word", "1 Word", "2 Words"];
 things.sort();
@@ -466,6 +483,7 @@ console.log("Every => greater then 3 ==>", numGreaterThen3);
 //--------------------------------------------------------------------
 // map(element, index, array) - // O map() percorre todos os elementos do array e retorna um novo array com o mesmo tamanho
 // O map() é ideal para array de objectos, de forma a extrair apenas a informação que desejamos de cada objectos.
+// Se utilizarmos o map com condições, ele irá devolver qualquer uma que seja verdade aleatóriamente e não a primeira.
 
 const arrayMap = [1, 2, 3];
 
@@ -609,6 +627,7 @@ let mySome = someArray.some((numLessThan0) => {
 console.log(mySome);
 // result ==> true
 // O resultado é true, porque um elemento do array (-3) é menor que zero.
+
 
 //CONDITIONAL STATEMENTS ===========================================================================================================================================================
 
@@ -862,8 +881,19 @@ let objValues = Object.values(someCoolName);
 console.log("Os values deste objecto são:", objValues);
 // return ==> [value1, value2, value3]
 
+
 //--------------------------------------------------------------------
 // Object.frozen(nome do objecto) - Serve para evitar que se modifique o objecto.
+
+
+//--------------------------------------------------------------------
+// Object.entries(nome do objecto) - Retorna um array com os arrays [key, value] la dentro na mesma ordem que estão no objecto.
+
+var obj = { foo: 'bar', baz: 42 };
+console.log('Object.entries ==>', Object.entries(obj)); 
+
+// return ==> [ ['foo', 'bar'], ['baz', 42] ]
+
 
 //--------------------------------------------------------------------
 // Contudo, existe um loop criado especialmente para objectos
@@ -980,7 +1010,7 @@ let myArrowFunction = (parameter) => {
 };
 
 // CALLBACK FUNCTIONS ============================================================================================================
-
+/*
 // setTimeout(callbackFunction , delay) - Aciona um temporizador (em milisegundos) que assim que acaba, executa a um função callback.
 
 const timeoutId = setTimeout(() => {
@@ -1029,3 +1059,4 @@ function estaFunc() {
 }
 
 // result ==> (passados 2 segundos) 1, (passados 2 segundos) 2, (passados 2 segundos) 3,... e assim sucessivamente até 15, onde limpamos o intervalo (clearInterval('...'))
+*/
