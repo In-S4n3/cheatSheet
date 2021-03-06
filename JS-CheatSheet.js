@@ -699,6 +699,18 @@ switch (tempo) {
 
 // ==========================================================================================================
 
+// ==========================================================================================================
+
+// Reminder Operator (%) - Dá-nos o que sobra de uma divisão, ou seja, quantas vez há o divisor dentro do dividendo.
+
+console.log(12 % 5) // 5 existe apenas 2 vezes em 12, logo o resultado é 2
+// result ==> 2
+
+console.log(5 % 12) // contudo, se o dividendo for menor que o divisor, o resultado é o divindendo, ou seja, 5
+// result ==> 5
+
+
+
 // BASIC ASSIGNMENT OPERATORS TABLE ===========================================================================================================================================================
 
 /*
