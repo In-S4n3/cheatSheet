@@ -12,6 +12,7 @@
 
 // DATAS DO JAVASCRIPT =================================================================================================================================================
 /*
+new Date()                    // Get the date and hour with all the spec under
 new Date().getDate()          // Get the day as a number (1-31)
 new Date().getDay()           // Get the weekday as a number (0-6)
 new Date().getFullYear()      // Get the four digit year (yyyy)
@@ -699,14 +700,16 @@ switch (tempo) {
 
 // ==========================================================================================================
 
+
+
 // ==========================================================================================================
 
 // Reminder Operator (%) - Dá-nos o que sobra de uma divisão, ou seja, quantas vez há o divisor dentro do dividendo.
 
-console.log(12 % 5) // 5 existe apenas 2 vezes em 12, logo o resultado é 2
+console.log('o resultado usando o reminder operator é:', 12 % 5) // 5 existe apenas 2 vezes em 12, logo o resultado é 2
 // result ==> 2
 
-console.log(5 % 12) // contudo, se o dividendo for menor que o divisor, o resultado é o divindendo, ou seja, 5
+console.log('o resultado usando o reminder operator é:', 5 % 12) // contudo, se o dividendo for menor que o divisor, o resultado é o divindendo, ou seja, 5
 // result ==> 5
 
 
