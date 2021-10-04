@@ -41,14 +41,15 @@ let number = 1987.8534;
 console.log("toFixed of the number 1987.8534 is =>", number.toFixed(1));
 // ==> result: 1987.9
 
-
 // Number.isInteger( numeroAleatorio ) // Serve para saber se numeroAleatorio, ou seja o numero detro de parentisis tem ou não casas decimais. Se tiver retorna false, se não retorna true.
 
 let numeroAleatorio = 1987.8534;
 
-console.log("Number.isInteger of the number 1987.8534 is =>", Number.isInteger(numeroAleatorio));
+console.log(
+  "Number.isInteger of the number 1987.8534 is =>",
+  Number.isInteger(numeroAleatorio)
+);
 // ==> result: false
-
 
 //--------------------------------------------------------------------
 // indexOf() // Mostra o index do conjunto de letras colocadas entre (). A = 0, d = 1, e = 2, "lia" = 3 da pralavra Adélia.
@@ -142,23 +143,19 @@ let randomNumber = Math.random() * (10 - 1) + 1;
 console.log(randomNumber.toFixed(2));
 // ==> 8.88
 
-
 //--------------------------------------------------------------------
 //Math.max()
 var arrMAthMax = [1, 2, 3];
-var max = arrMAthMax.reduce(function(a, b) {
+var max = arrMAthMax.reduce(function (a, b) {
   return Math.max(a, b);
 });
-
 
 //--------------------------------------------------------------------
 //Math.min()
 var arrMAthMin = [1, 2, 3];
-var max = arrMAthMin.reduce(function(a, b) {
+var max = arrMAthMin.reduce(function (a, b) {
   return Math.max(a, b);
-}); 
-
-
+});
 
 //--------------------------------------------------------------------
 //typeof - // Para se saber de que tipo é a variavel. Ex: console.log(typeof variavel).
@@ -216,6 +213,27 @@ let dob = 17031987;
 console.log(dob.toString());
 // result ==> '17031987'
 
+// O toString também pode ser utilizado para converter número a valores hexadecimais, contudo, 
+// para nos mantermos com 2 valores (10 ou CC ou AA) temos que defininir limites conforme exemplo abaixo.
+function rgb(r, g, b) {
+  const convert = (hex) => {
+    if(hex < 0) {
+      return '00';
+    }
+    if(hex > 255) {
+      return 'FF';
+    }
+    return (hex > 15 ? hex.toString(16) : '0' + hex.toString(16)).toUpperCase();
+  }
+  return convert(r) + convert(g) + convert(b); 
+}
+
+console.log(rgb(300,255,255))
+// result ==> FFFFFF
+
+// NOTA: toString(2) => retorna um numero em binario, toString(10) => é igual ao a toString(), converte o numero em string, o toString(16) => converte o numero em valores hexadecimais. 
+
+
 //--------------------------------------------------------------------
 //replace('elemento a substituir', 'elemnto nova') - serve para substituir um elemento por outro.
 let frase = "Vou usar o metodo replace(), vais gostar.";
@@ -224,15 +242,11 @@ let novaFrase = frase.replace("metodo", "string prototype");
 console.log(novaFrase);
 // resultado ==> Vou usar o string prototype replace(), vais gostar.
 
-
-
 // ARRAYS ===========================================================================================================================================================
-
 
 // Array Defenition: let myArray = [element1, element2, element3];
 
 // Multi-dimensional array: let myMultiArray = [[1,2,3], [4,5,6], [7,8,9]]
-
 
 //push() - // Adicionar um item ao final do array.
 
@@ -629,7 +643,6 @@ console.log(mySome);
 // result ==> true
 // O resultado é true, porque um elemento do array (-3) é menor que zero.
 
-
 //CONDITIONAL STATEMENTS ===========================================================================================================================================================
 
 /*
@@ -700,19 +713,15 @@ switch (tempo) {
 
 // ==========================================================================================================
 
-
-
 // ==========================================================================================================
 
 // Reminder Operator (%) - Dá-nos o que sobra de uma divisão, ou seja, quantas vez há o divisor dentro do dividendo.
 
-console.log('o resultado usando o reminder operator é:', 12 % 5) // 5 existe apenas 2 vezes em 12, logo o resultado é 2
+console.log("o resultado usando o reminder operator é:", 12 % 5); // 5 existe apenas 2 vezes em 12, logo o resultado é 2
 // result ==> 2
 
-console.log('o resultado usando o reminder operator é:', 5 % 12) // contudo, se o dividendo for menor que o divisor, o resultado é o divindendo, ou seja, 5
+console.log("o resultado usando o reminder operator é:", 5 % 12); // contudo, se o dividendo for menor que o divisor, o resultado é o divindendo, ou seja, 5
 // result ==> 5
-
-
 
 // BASIC ASSIGNMENT OPERATORS TABLE ===========================================================================================================================================================
 
@@ -815,7 +824,6 @@ for (let i = 0; i < multiDimArr.length; i++) {
   na posição: 1 2 temos o item: 6
 */
 
-
 //------------------------------------------------------------------
 // Nested Loops:
 for (let i = 0; i < 3; i++) {
@@ -896,19 +904,16 @@ let objValues = Object.values(someCoolName);
 console.log("Os values deste objecto são:", objValues);
 // return ==> [value1, value2, value3]
 
-
 //--------------------------------------------------------------------
 // Object.frozen(nome do objecto) - Serve para evitar que se modifique o objecto.
-
 
 //--------------------------------------------------------------------
 // Object.entries(nome do objecto) - Retorna um array com os arrays [key, value] la dentro na mesma ordem que estão no objecto.
 
-var obj = { foo: 'bar', baz: 42 };
-console.log('Object.entries ==>', Object.entries(obj)); 
+var obj = { foo: "bar", baz: 42 };
+console.log("Object.entries ==>", Object.entries(obj));
 
 // return ==> [ ['foo', 'bar'], ['baz', 42] ]
-
 
 //--------------------------------------------------------------------
 // Contudo, existe um loop criado especialmente para objectos
@@ -953,6 +958,8 @@ console.log(book2);
 // <== { author: "Charlotte Bronte" }
 console.log(book1 === book2);
 // <== false
+
+
 
 // OOP ===============================================================================================================================================
 // class - Serve como modelo para construir novos objectos
@@ -999,6 +1006,8 @@ class Person extends MyObj {
 let myNewObjInh = new Person("Rui", 33, 175, 70);
 console.log(myNewObjInh);
 // result ==> { name: 'Rui', age: 33, height: 175, weigth: 70 }
+
+
 
 // FUNCTIONS ===========================================================================================================================================
 
