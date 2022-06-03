@@ -213,26 +213,25 @@ let dob = 17031987;
 console.log(dob.toString());
 // result ==> '17031987'
 
-// O toString também pode ser utilizado para converter número a valores hexadecimais, contudo, 
+// O toString também pode ser utilizado para converter número a valores hexadecimais, contudo,
 // para nos mantermos com 2 valores (10 ou CC ou AA) temos que defininir limites conforme exemplo abaixo.
 function rgb(r, g, b) {
   const convert = (hex) => {
-    if(hex < 0) {
-      return '00';
+    if (hex < 0) {
+      return "00";
     }
-    if(hex > 255) {
-      return 'FF';
+    if (hex > 255) {
+      return "FF";
     }
-    return (hex > 15 ? hex.toString(16) : '0' + hex.toString(16)).toUpperCase();
-  }
-  return convert(r) + convert(g) + convert(b); 
+    return (hex > 15 ? hex.toString(16) : "0" + hex.toString(16)).toUpperCase();
+  };
+  return convert(r) + convert(g) + convert(b);
 }
 
-console.log(rgb(300,255,255))
+console.log(rgb(300, 255, 255));
 // result ==> FFFFFF
 
-// NOTA: toString(2) => retorna um numero em binario, toString(10) => é igual ao a toString(), converte o numero em string, o toString(16) => converte o numero em valores hexadecimais. 
-
+// NOTA: toString(2) => retorna um numero em binario, toString(10) => é igual ao a toString(), converte o numero em string, o toString(16) => converte o numero em valores hexadecimais.
 
 //--------------------------------------------------------------------
 //replace('elemento a substituir', 'elemnto nova') - serve para substituir um elemento por outro.
@@ -959,7 +958,22 @@ console.log(book2);
 console.log(book1 === book2);
 // <== false
 
+//--------------------------------------------------------------------
+// Se quisermos actualizar dinamicamente uma key num objecto, temos que usar a key a ser mudada dentro de um array []:
+let dynamicKey = "profession";
 
+let myNewObjectExample = {
+  name: "Tiago",
+  age: 35,
+  [dynamicKey]: "web dev",
+};
+
+console.log(myNewObjectExample);
+// result ==> {
+//    name: "Tiago",
+//    age: 35,
+//    profession: "web dev"
+// }
 
 // OOP ===============================================================================================================================================
 // class - Serve como modelo para construir novos objectos
@@ -1006,8 +1020,6 @@ class Person extends MyObj {
 let myNewObjInh = new Person("Rui", 33, 175, 70);
 console.log(myNewObjInh);
 // result ==> { name: 'Rui', age: 33, height: 175, weigth: 70 }
-
-
 
 // FUNCTIONS ===========================================================================================================================================
 
