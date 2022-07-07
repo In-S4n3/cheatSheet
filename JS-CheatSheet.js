@@ -179,7 +179,7 @@ console.log(
 // result ==> Vou repetirar a variavel repetição 5 vezes => Awesome!Awesome!Awesome!Awesome!Awesome!
 
 //--------------------------------------------------------------------
-//slice(start, end) - // tira parte da string começada em start e que acabar em end, por exemplo: let frase = "sou um bacano"   frase.slice(7, 13) = bacano
+//slice(start, end) - // tira parte da string começada em start e que acabar em end, por exemplo: let frase = "sou um bacano"   frase.slice(7, 13) = bacano | array.splice() também pode ser usado para cliar uma shallow copy do array.
 
 let sliceExample = "Não sei que frase inventar já...";
 
@@ -295,7 +295,7 @@ console.log(myArray2);
 // result ==> [ 'item2', 'item3' ]
 
 //--------------------------------------------------------------------
-//splice(index, nº de items a eliminar/adicionar a partir do index definido, item que queremos substituir pelo que eliminamos) - // Retira um item à escolha no array | array.splice() também pode ser usado para cliar uma shallow copy do array.
+//splice(index, nº de items a eliminar/adicionar a partir do index definido, item que queremos substituir pelo que eliminamos) - // Retira um item à escolha no array
 
 let myArray3 = ["item1", "item2", "item3", "item4", "item5"];
 let myArray4 = ["item1", "item2", "item3", "item4", "item5"];
@@ -398,6 +398,24 @@ let [tomato, mushroom, carrot] = ["🍅", "🍄", "🥕"];
 
 console.log(tomato, mushroom, carrot);
 // result ==> 🍅 🍄 🥕
+
+//--------------------------------------------------------------------
+//...rest operator
+
+const [tomate, cogumelo, ...rest] = ["🍅", "🍄", "🥦", "🥒", "🌽", "🥕", "🥑"];
+
+console.log(tomato); // '🍅'
+console.log(mushroom); // '🍄'
+console.log(rest); // ["🥦", "🥒", "🌽", "🥕", "🥑"]
+
+//--------------------------------------------------------------------
+//fill() - "preenche"/altera o array nos pontos especificados.
+const colors = ["red", "blue", "green"];
+
+colors.fill("green", 1, 2); // ["red", "green", "green"]
+colors.fill("blue", 2, 3); // ["red", "green", "blue"]
+
+console.log(colors);
 
 // FUNCTION FOR ARRAYS =================================================================================================================================================================
 
