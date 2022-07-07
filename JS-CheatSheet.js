@@ -295,7 +295,7 @@ console.log(myArray2);
 // result ==> [ 'item2', 'item3' ]
 
 //--------------------------------------------------------------------
-//splice(index, nº de items a eliminar/adicionar a partir do index definido, item que queremos substituir pelo que eliminamos) - // Retira um item à escolha no array
+//splice(index, nº de items a eliminar/adicionar a partir do index definido, item que queremos substituir pelo que eliminamos) - // Retira um item à escolha no array | array.splice() também pode ser usado para cliar uma shallow copy do array.
 
 let myArray3 = ["item1", "item2", "item3", "item4", "item5"];
 let myArray4 = ["item1", "item2", "item3", "item4", "item5"];
@@ -390,6 +390,14 @@ let arrayIncludes = ["Será", "que", "esta", "aqui", "o", "Tiago"];
 
 console.log(arrayIncludes.includes("Tiago"));
 // result ==> true
+
+//--------------------------------------------------------------------
+//Array Destructuring
+
+let [tomato, mushroom, carrot] = ["🍅", "🍄", "🥕"];
+
+console.log(tomato, mushroom, carrot);
+// result ==> 🍅 🍄 🥕
 
 // FUNCTION FOR ARRAYS =================================================================================================================================================================
 
