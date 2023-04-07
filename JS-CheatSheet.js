@@ -1071,7 +1071,7 @@ let myArrowFunction = (parameter) => {
   return; //qq coisa.
 };
 
-// CALLBACK FUNCTIONS ============================================================================================================
+// CALLBACK FUNCTIONS TIMERS ============================================================================================================
 /*
 // setTimeout(callbackFunction , delay) - Aciona um temporizador (em milisegundos) que assim que acaba, executa a um função callback.
 
@@ -1122,3 +1122,151 @@ function estaFunc() {
 
 // result ==> (passados 2 segundos) 1, (passados 2 segundos) 2, (passados 2 segundos) 3,... e assim sucessivamente até 15, onde limpamos o intervalo (clearInterval('...'))
 */
+
+// ================================================================================================================================
+// Must know ALGORITHMES
+
+// Linked Values/List
+class Node {
+  constructor(val) {
+    this.val = val;
+    this.next = null;
+  }
+}
+
+const a = new Node("A");
+const b = new Node("B");
+const c = new Node("C");
+const d = new Node("D");
+
+a.next = b;
+b.next = c;
+c.next = d;
+
+const printValues = (head) => {
+  while (head !== null) {
+    console.log(head.val);
+    head = head.next;
+  }
+};
+
+//printValues(a);
+
+const printValuesRecursively = (head) => {
+  if (!head) return;
+  console.log(head.val);
+  printValues(head.next);
+};
+
+printValuesRecursively(a);
+// result => A, B, C, D
+
+//----------------------------------------------------------------
+// Binary Tree (display the nodes)
+
+function traverse(node) {
+  if (!node) {
+    return;
+  }
+  console.log("---", node.left, "---");
+  console.log("---", node.right, "---");
+
+  console.log(node.value);
+  traverse(node.left);
+  traverse(node.right);
+}
+
+const root = {
+  value: 1,
+  left: {
+    value: 2,
+    left: { value: 4 },
+    right: { value: 5 },
+  },
+  right: {
+    value: 3,
+    left: { value: 6 },
+    right: { value: 7 },
+  },
+};
+
+traverse(root);
+// result => 1, 2, 4, 5, 3, 6, 7
+
+//----------------------------------------------------------------
+// Binary Tree (sort the nodes)
+
+// Define the Node class
+class Node {
+  constructor(value) {
+    this.value = value;
+    this.left = null;
+    this.right = null;
+  }
+}
+
+// Define the BinarySearchTree class
+class BinarySearchTree {
+  constructor() {
+    this.root = null;
+  }
+
+  // Insert a new node into the binary search tree
+  insert(value) {
+    const newNode = new Node(value);
+
+    if (!this.root) {
+      this.root = newNode;
+      return this;
+    }
+
+    let current = this.root;
+
+    while (true) {
+      if (value === current.value) return undefined;
+      if (value < current.value) {
+        if (!current.left) {
+          current.left = newNode;
+          return this;
+        }
+        current = current.left;
+      } else {
+        if (!current.right) {
+          current.right = newNode;
+          return this;
+        }
+        current = current.right;
+      }
+    }
+  }
+
+  // Sort the binary search tree using in-order traversal
+  sort() {
+    const result = [];
+
+    function traverse(node) {
+      if (node.left) traverse(node.left);
+      result.push(node.value);
+      if (node.right) traverse(node.right);
+    }
+
+    traverse(this.root);
+    return result;
+  }
+}
+
+// Create a new binary search tree
+const tree = new BinarySearchTree();
+
+// Insert nodes into the binary search tree
+tree.insert(10);
+tree.insert(5);
+tree.insert(15);
+tree.insert(2);
+tree.insert(7);
+tree.insert(12);
+tree.insert(17);
+
+// Sort the binary search tree using in-order traversal
+console.log(tree.sort());
+// result => [2, 5, 7, 10, 12, 15, 17]
