@@ -1289,3 +1289,6 @@ function binSearch(arr, toSearch) {
 
   return arr[middle] === toSearch ? middle : -1;
 }
+
+console.log(binSearch(array, 3));
+// result => 2
