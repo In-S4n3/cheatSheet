@@ -1127,17 +1127,17 @@ function estaFunc() {
 // Must know ALGORITHMES
 
 // Linked Values/List
-class Node {
+class ListNode { // mesmo nome que o LeetCode usa
   constructor(val) {
     this.val = val;
     this.next = null;
   }
 }
 
-const a = new Node("A");
-const b = new Node("B");
-const c = new Node("C");
-const d = new Node("D");
+const a = new ListNode("A");
+const b = new ListNode("B");
+const c = new ListNode("C");
+const d = new ListNode("D");
 
 a.next = b;
 b.next = c;
@@ -1155,7 +1155,7 @@ const printValues = (head) => {
 const printValuesRecursively = (head) => {
   if (!head) return;
   console.log(head.val);
-  printValues(head.next);
+  printValuesRecursively(head.next); // chama-se a si própria: isto é a recursão
 };
 
 printValuesRecursively(a);
@@ -1290,5 +1290,5 @@ function binSearch(arr, toSearch) {
   return arr[middle] === toSearch ? middle : -1;
 }
 
-console.log(binSearch(array, 3));
+console.log(binSearch([1, 2, 3, 4, 5], 3)); // o array TEM de estar ordenado
 // result => 2
