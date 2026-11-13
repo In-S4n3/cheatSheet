@@ -1,12 +1,24 @@
 // LEETCODE PATTERNS (nível fácil) — JavaScript
-// Corre com: node LeetCode-Patterns.js   → se nada rebentar, todos os exemplos estão certos.
+// Corre com: node 02-LeetCode-Facil.js   → se nada rebentar, todos os exemplos estão certos.
 // Cada secção: QUANDO usar → TEMPLATE → problema real resolvido → teste.
+
+// ÍNDICE (Ctrl+F "§N")
+//   §0 COMO ATACAR UM PROBLEMA (antes de escrever código)
+//   §1 ARMADILHAS DE JS QUE FALHAM TESTES
+//   §2 HASH MAP / SET — "já vi isto antes?" / "quantas vezes aparece?"
+//   §3 DOIS PONTEIROS — um em cada ponta, ou um lento + um rápido
+//   §4 JANELA DESLIZANTE — subarray/substring contínuo
+//   §5 SOMA DE PREFIXOS / KADANE
+//   §6 PESQUISA BINÁRIA — array ORDENADO, corta metade de cada vez O(log n)
+//   §7 STACK (pilha) — "o último a entrar é o primeiro a sair"
+//   §8 LISTA LIGADA — LeetCode dá-te `head` (um ListNode) e tu manipulas os .next
+//   §9 ÁRVORES BINÁRIAS — quase tudo é recursão
+//   §10 MATEMÁTICA / BITS que aparecem nos fáceis
+//   §11 LISTA DE TREINO
 
 const assert = require("node:assert/strict");
 
-// =====================================================================================
-// 0. COMO ATACAR UM PROBLEMA (antes de escrever código)
-// =====================================================================================
+// §0 ── COMO ATACAR UM PROBLEMA (antes de escrever código) ──────────
 /*
   1. Lê os exemplos e escreve tu próprio 1 caso pequeno + 1 caso limite (array vazio, 1 elemento, negativos, repetidos).
   2. Resolve À MÃO no papel. O que é que os teus olhos fizeram? Isso é o algoritmo.
@@ -27,9 +39,7 @@ const assert = require("node:assert/strict");
     ⚠️ arr.includes(), arr.indexOf(), arr.shift(), arr.splice() são O(n) — dentro de um loop dá O(n²).
 */
 
-// =====================================================================================
-// 1. ARMADILHAS DE JS QUE FALHAM TESTES
-// =====================================================================================
+// §1 ── ARMADILHAS DE JS QUE FALHAM TESTES ──────────
 
 // sort() SEM função compara como TEXTO (MDN: converte para string).
 assert.deepEqual([10, 1, 2].sort(), [1, 10, 2]); // 😱
@@ -83,9 +93,7 @@ while (num > 0) {
 }
 assert.equal(somaDigitos, 10);
 
-// =====================================================================================
-// 2. HASH MAP / SET — "já vi isto antes?" / "quantas vezes aparece?"
-// =====================================================================================
+// §2 ── HASH MAP / SET — "já vi isto antes?" / "quantas vezes aparece?" ──────────
 // QUANDO: procurar um valor repetidamente, contar frequências, detetar duplicados.
 // Map > Object para contar: aceita qualquer tipo de chave e tem .size (MDN).
 
@@ -150,9 +158,7 @@ function groupAnagrams(words) {
 }
 assert.deepEqual(groupAnagrams(["eat", "tea", "tan", "nat"]), [["eat", "tea"], ["tan", "nat"]]);
 
-// =====================================================================================
-// 3. DOIS PONTEIROS — um em cada ponta, ou um lento + um rápido
-// =====================================================================================
+// §3 ── DOIS PONTEIROS — um em cada ponta, ou um lento + um rápido ──────────
 // QUANDO: array/string ordenado, palíndromos, inverter, remover in-place.
 
 // TEMPLATE pontas opostas
@@ -222,9 +228,7 @@ function merge(nums1, m, nums2, n) {
 }
 assert.deepEqual(merge([1, 2, 3, 0, 0, 0], 3, [2, 5, 6], 3), [1, 2, 2, 3, 5, 6]);
 
-// =====================================================================================
-// 4. JANELA DESLIZANTE — subarray/substring contínuo
-// =====================================================================================
+// §4 ── JANELA DESLIZANTE — subarray/substring contínuo ──────────
 // QUANDO: "o maior/menor subarray/substring que ...", "k elementos seguidos".
 
 // LC 121 — Best Time to Buy and Sell Stock: guarda o mínimo até agora.
@@ -267,9 +271,7 @@ function lengthOfLongestSubstring(s) {
 assert.equal(lengthOfLongestSubstring("abcabcbb"), 3);
 assert.equal(lengthOfLongestSubstring(""), 0);
 
-// =====================================================================================
-// 5. SOMA DE PREFIXOS / KADANE
-// =====================================================================================
+// §5 ── SOMA DE PREFIXOS / KADANE ──────────
 // prefix[i] = soma de nums[0..i-1]  →  soma(l..r) = prefix[r + 1] - prefix[l] em O(1)
 function prefixos(nums) {
   const p = [0];
@@ -295,9 +297,7 @@ function maxSubArray(nums) {
 assert.equal(maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4]), 6);
 assert.equal(maxSubArray([-3, -1]), -1);
 
-// =====================================================================================
-// 6. PESQUISA BINÁRIA — array ORDENADO, corta metade de cada vez O(log n)
-// =====================================================================================
+// §6 ── PESQUISA BINÁRIA — array ORDENADO, corta metade de cada vez O(log n) ──────────
 // TEMPLATE (o mais seguro de memorizar)
 function binarySearch(nums, target) {
   let l = 0, r = nums.length - 1;
@@ -326,9 +326,7 @@ function searchInsert(nums, target) {
 assert.equal(searchInsert([1, 3, 5, 6], 2), 1);
 assert.equal(searchInsert([1, 3, 5, 6], 7), 4);
 
-// =====================================================================================
-// 7. STACK (pilha) — "o último a entrar é o primeiro a sair"
-// =====================================================================================
+// §7 ── STACK (pilha) — "o último a entrar é o primeiro a sair" ──────────
 // Em JS: array com push() e pop() (ambos O(1)). Topo = stack.at(-1).
 // QUANDO: parênteses, desfazer, "elemento anterior/seguinte maior".
 
@@ -350,9 +348,7 @@ assert.equal(isValid("(("), false);
 // FILA (queue): array com push() + shift() funciona, mas shift() é O(n).
 // Para BFS no nível fácil chega; se der Time Limit, usa um índice: while (i < fila.length) fila[i++]
 
-// =====================================================================================
-// 8. LISTA LIGADA — LeetCode dá-te `head` (um ListNode) e tu manipulas os .next
-// =====================================================================================
+// §8 ── LISTA LIGADA — LeetCode dá-te `head` (um ListNode) e tu manipulas os .next ──────────
 class ListNode {
   constructor(val, next = null) {
     this.val = val;
@@ -420,9 +416,7 @@ ciclo.next.next.next = ciclo; // 3 → 1
 assert.equal(hasCycle(ciclo), true);
 assert.equal(hasCycle(toList([1, 2])), false);
 
-// =====================================================================================
-// 9. ÁRVORES BINÁRIAS — quase tudo é recursão
-// =====================================================================================
+// §9 ── ÁRVORES BINÁRIAS — quase tudo é recursão ──────────
 // RECEITA DA RECURSÃO:
 //   1. Caso base: if (!node) return <valor para árvore vazia>;
 //   2. Confia que a função já funciona para node.left e node.right.
@@ -500,9 +494,7 @@ function levelOrder(root) {
 }
 assert.deepEqual(levelOrder(arvore), [[3], [9, 20], [15, 7]]);
 
-// =====================================================================================
-// 10. MATEMÁTICA / BITS que aparecem nos fáceis
-// =====================================================================================
+// §10 ── MATEMÁTICA / BITS que aparecem nos fáceis ──────────
 // LC 136 — Single Number: x ^ x = 0 e x ^ 0 = x → o XOR de todos sobra o único
 const singleNumber = (nums) => nums.reduce((acc, n) => acc ^ n, 0);
 assert.equal(singleNumber([4, 1, 2, 1, 2]), 4);
@@ -542,9 +534,7 @@ assert.equal(climbStairs(5), 8);
 
 console.log("✅ Todos os exemplos passaram.");
 
-// =====================================================================================
-// LISTA DE TREINO (por esta ordem) — tenta sozinho 20 min antes de olhar para cima
-// =====================================================================================
+// §11 ── LISTA DE TREINO (por esta ordem) ── tenta sozinho 20 min antes de olhar para cima
 /*
   Hash map:      1 Two Sum · 217 · 242 · 387 · 383 Ransom Note · 349 Intersection of Two Arrays
   Dois ponteiros: 125 · 344 · 26 · 283 · 88 · 977 Squares of a Sorted Array
