@@ -1,9 +1,9 @@
-<title>Caderno JS e LeetCode</title>
+<title>JS and LeetCode Notebook</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap">
 <style>
-/* Layout: caderno de uma coluna — barra fixa com separadores e pesquisa, secções que abrem e fecham */
+/* Layout: one-column notebook — sticky bar with tabs and search, sections that open and close */
 :root {
   --bg: #f6f7fb; --surface: #ffffff; --fg: #1b2030; --muted: #5d6680; --line: #dfe3ee;
   --accent: #2f5bd3; --accent-soft: #e6ecfb; --done: #1f8a5b;
@@ -55,6 +55,7 @@ details.sec.is-done .title { color: var(--muted); }
 .body { padding: 0 14px 14px; min-width: 0; }
 
 pre { margin: 0; background: var(--code-bg); border-radius: 8px; padding: 12px; font: 0.82rem/1.55 var(--f-code); white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 2; }
+.cases { display: grid; gap: 10px; min-width: 0; }
 .md { min-width: 0; }
 .md h2 { font: 700 1.1rem var(--f-head); margin: 1.2em 0 0.4em; }
 .md h3 { font: 600 1rem var(--f-head); margin: 1em 0 0.3em; }
@@ -81,13 +82,13 @@ footer { color: var(--muted); font-size: 0.8rem; }
 <header>
   <div class="wrap">
     <div class="top">
-      <h1>Caderno JS e LeetCode</h1>
+      <h1>JS and LeetCode Notebook</h1>
       <span class="progress" id="progress"></span>
     </div>
-    <nav id="tabs" aria-label="Ficheiros"></nav>
+    <nav id="tabs" aria-label="Files"></nav>
     <div class="search">
-      <input id="q" type="search" placeholder="Procurar em tudo: reduce, Map, janela, idempotência…" aria-label="Procurar">
-      <button id="toggle" type="button">Abrir tudo</button>
+      <input id="q" type="search" placeholder="Search everything: reduce, Map, window, idempotency…" aria-label="Search">
+      <button id="toggle" type="button">Open all</button>
     </div>
   </div>
 </header>
@@ -114,8 +115,13 @@ function renderBody(sec) {
     const html = window.marked ? marked.parse(sec.body) : `<pre>${esc(sec.body)}</pre>`;
     return `<div class="md">${html.replace(/<table>/g, '<div class="table-wrap"><table>').replace(/<\/table>/g, "</table></div>")}</div>`;
   }
-  const code = window.hljs ? hljs.highlight(sec.body, { language: "javascript" }).value : esc(sec.body);
-  return `<pre><code>${code}</code></pre>`;
+  // each "//-----" separator starts a new case → its own block
+  return `<div class="cases">${sec.body
+    .split(/^\s*\/\/-{20,}\s*$/m)
+    .map((c) => c.trim())
+    .filter(Boolean)
+    .map((c) => `<pre><code>${window.hljs ? hljs.highlight(c, { language: "javascript" }).value : esc(c)}</code></pre>`)
+    .join("")}</div>`;
 }
 
 function card(tab, sec, i, showFrom) {
@@ -125,7 +131,7 @@ function card(tab, sec, i, showFrom) {
   d.innerHTML = `<summary>
       <span class="num">${sec.n ? "§" + sec.n : "★"}</span>
       <span class="title">${showFrom ? `<span class="from">${tab.label}</span><br>` : ""}${esc(sec.title)}</span>
-      <label class="done-box"><input type="checkbox" ${done.has(key) ? "checked" : ""} aria-label="Marcar como estudado"> ok</label>
+      <label class="done-box"><input type="checkbox" ${done.has(key) ? "checked" : ""} aria-label="Mark as studied"> ok</label>
     </summary><div class="body"></div>`;
   const box = d.querySelector("input");
   box.addEventListener("click", (e) => e.stopPropagation());
@@ -135,7 +141,7 @@ function card(tab, sec, i, showFrom) {
     store.set("done", [...done]);
     updateProgress();
   });
-  // só desenha o conteúdo quando abre (página leve no telemóvel)
+  // render the content only when opened (keeps the page light on phones)
   d.addEventListener("toggle", () => {
     const body = d.querySelector(".body");
     if (d.open && !body.innerHTML) body.innerHTML = renderBody(sec);
@@ -149,7 +155,7 @@ function updateProgress() {
   const t = currentTab();
   const total = t.sections.length;
   const n = t.sections.filter((s, i) => done.has(`${t.id}:${s.n || "x" + i}:${s.title}`)).length;
-  $("progress").textContent = `${n}/${total} estudadas`;
+  $("progress").textContent = `${n}/${total} studied`;
 }
 
 function render() {
@@ -163,16 +169,16 @@ function render() {
     for (const tab of TABS) tab.sections.forEach((s, i) => {
       if (norm(s.title + "\n" + s.body).includes(q)) { list.append(card(tab, s, i, true)); hits++; }
     });
-    list.prepend(Object.assign(document.createElement("p"), { className: "hint", textContent: hits ? `${hits} secções com "${$("q").value.trim()}" — abre para ver.` : "Nada encontrado. Tenta outra palavra (ex.: sort, Map, ponteiros)." }));
+    list.prepend(Object.assign(document.createElement("p"), { className: "hint", textContent: hits ? `${hits} sections mention "${$("q").value.trim()}". Open one to read it.` : "No match. Try another word (e.g. sort, Map, pointers)." }));
   } else {
-    list.append(Object.assign(document.createElement("p"), { className: "hint", textContent: `${t.file} · toca numa secção para abrir · marca “ok” quando a dominares` }));
+    list.append(Object.assign(document.createElement("p"), { className: "hint", textContent: `${t.file} · tap a section to open it · tick “ok” once you know it` }));
     t.sections.forEach((s, i) => list.append(card(t, s, i, false)));
-    if (t.id === "inicio") list.querySelector("details").open = true;
+    if (t.id === "start") list.querySelector("details").open = true;
   }
   const foot = document.createElement("footer");
-  foot.textContent = `Gerado a ${BUILT} a partir do repo cheatSheet. O progresso fica guardado só neste browser.`;
+  foot.textContent = `Generated on ${BUILT} from the cheatSheet repo. Progress is saved in this browser only.`;
   list.append(foot);
-  $("toggle").textContent = "Abrir tudo";
+  $("toggle").textContent = "Open all";
   updateProgress();
 }
 
@@ -183,7 +189,7 @@ $("toggle").addEventListener("click", () => {
   const all = [...document.querySelectorAll("details.sec")];
   const open = all.some((d) => !d.open);
   all.forEach((d) => (d.open = open));
-  $("toggle").textContent = open ? "Fechar tudo" : "Abrir tudo";
+  $("toggle").textContent = open ? "Close all" : "Open all";
 });
 window.addEventListener("hashchange", () => { scrollTo(0, 0); render(); });
 render();
