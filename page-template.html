@@ -1,0 +1,190 @@
+<title>Caderno JS e LeetCode</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: caderno de uma coluna — barra fixa com separadores e pesquisa, secções que abrem e fecham */
+:root {
+  --bg: #f6f7fb; --surface: #ffffff; --fg: #1b2030; --muted: #5d6680; --line: #dfe3ee;
+  --accent: #2f5bd3; --accent-soft: #e6ecfb; --done: #1f8a5b;
+  --code-bg: #f0f2f8; --c-comment: #3e6b4f; --c-key: #8a2fb8; --c-str: #a3431b; --c-num: #0b6e8a; --c-fn: #2f5bd3;
+  --f-head: "Space Grotesk", system-ui, sans-serif;
+  --f-body: "Atkinson Hyperlegible", system-ui, sans-serif;
+  --f-code: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12151f; --surface: #1a1e2b; --fg: #e6e9f2; --muted: #9aa3bb; --line: #2c3245;
+  --accent: #8aa8ff; --accent-soft: #232c48; --done: #5fd39b;
+  --code-bg: #151925; --c-comment: #8fc7a2; --c-key: #d6a2ff; --c-str: #ffb38a; --c-num: #7fd6ec; --c-fn: #8aa8ff;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12151f; --surface: #1a1e2b; --fg: #e6e9f2; --muted: #9aa3bb; --line: #2c3245;
+  --accent: #8aa8ff; --accent-soft: #232c48; --done: #5fd39b;
+  --code-bg: #151925; --c-comment: #8fc7a2; --c-key: #d6a2ff; --c-str: #ffb38a; --c-num: #7fd6ec; --c-fn: #8aa8ff;
+  color-scheme: dark }
+
+body { background: var(--bg); color: var(--fg); font: 16px/1.55 var(--f-body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { max-width: 860px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+header .wrap { display: grid; gap: 10px; padding-block: 12px; }
+.top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+h1 { font: 700 1.2rem/1.2 var(--f-head); margin: 0; letter-spacing: -0.01em; }
+.progress { font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+nav { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+nav a { flex: none; padding: 6px 12px; border-radius: 999px; color: var(--muted); text-decoration: none; font: 500 0.95rem var(--f-head); border: 1px solid var(--line); }
+nav a[aria-current="page"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.search { display: flex; gap: 8px; }
+.search input { flex: 1; min-width: 0; font: inherit; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
+button { font: 500 0.85rem var(--f-head); padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+main .wrap { display: grid; gap: 10px; padding-block: 16px 48px; }
+.hint { color: var(--muted); font-size: 0.9rem; margin: 0; }
+details.sec { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; min-width: 0; }
+details.sec > summary { list-style: none; display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; }
+details.sec > summary::-webkit-details-marker { display: none; }
+.num { flex: none; font: 600 0.8rem var(--f-code); color: var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 2px 6px; min-width: 2.6em; text-align: center; font-variant-numeric: tabular-nums; }
+.title { flex: 1; min-width: 0; font: 500 1rem/1.3 var(--f-head); text-wrap: balance; }
+.from { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+.done-box { flex: none; display: flex; align-items: center; gap: 4px; font-size: 0.8rem; color: var(--muted); }
+.done-box input { width: 18px; height: 18px; accent-color: var(--done); }
+details.sec.is-done .num { background: var(--done); color: var(--surface); }
+details.sec.is-done .title { color: var(--muted); }
+.body { padding: 0 14px 14px; min-width: 0; }
+
+pre { margin: 0; background: var(--code-bg); border-radius: 8px; padding: 12px; font: 0.82rem/1.55 var(--f-code); white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 2; }
+.md { min-width: 0; }
+.md h2 { font: 700 1.1rem var(--f-head); margin: 1.2em 0 0.4em; }
+.md h3 { font: 600 1rem var(--f-head); margin: 1em 0 0.3em; }
+.md p, .md li { max-width: 65ch; }
+.md code { font: 0.85em var(--f-code); background: var(--code-bg); padding: 1px 4px; border-radius: 4px; }
+.md pre code { background: none; padding: 0; }
+.md a { color: var(--accent); overflow-wrap: anywhere; }
+.md blockquote { margin: 0.8em 0; padding: 8px 12px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 8px 8px 0; }
+.table-wrap { overflow-x: auto; margin: 0.6em 0; }
+.md table { border-collapse: collapse; font-size: 0.88rem; min-width: 100%; }
+.md th, .md td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+.md th { background: var(--code-bg); font-family: var(--f-head); }
+mark { background: var(--accent-soft); color: var(--fg); border-radius: 3px; }
+
+.hljs-comment { color: var(--c-comment); }
+.hljs-keyword, .hljs-built_in, .hljs-literal { color: var(--c-key); }
+.hljs-string, .hljs-regexp { color: var(--c-str); }
+.hljs-number { color: var(--c-num); }
+.hljs-title, .hljs-title.function_ { color: var(--c-fn); }
+footer { color: var(--muted); font-size: 0.8rem; }
+@media (prefers-reduced-motion: no-preference) { details.sec[open] > .body { animation: in 160ms ease-out; } @keyframes in { from { opacity: 0.4 } to { opacity: 1 } } }
+</style>
+
+<header>
+  <div class="wrap">
+    <div class="top">
+      <h1>Caderno JS e LeetCode</h1>
+      <span class="progress" id="progress"></span>
+    </div>
+    <nav id="tabs" aria-label="Ficheiros"></nav>
+    <div class="search">
+      <input id="q" type="search" placeholder="Procurar em tudo: reduce, Map, janela, idempotência…" aria-label="Procurar">
+      <button id="toggle" type="button">Abrir tudo</button>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="wrap" id="list"></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+const TABS = /*__DATA__*/null;
+const BUILT = "__BUILT__";
+const $ = (id) => document.getElementById(id);
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+const done = new Set(store.get("done") || []);
+const norm = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function renderBody(sec) {
+  if (sec.kind === "md") {
+    const html = window.marked ? marked.parse(sec.body) : `<pre>${esc(sec.body)}</pre>`;
+    return `<div class="md">${html.replace(/<table>/g, '<div class="table-wrap"><table>').replace(/<\/table>/g, "</table></div>")}</div>`;
+  }
+  const code = window.hljs ? hljs.highlight(sec.body, { language: "javascript" }).value : esc(sec.body);
+  return `<pre><code>${code}</code></pre>`;
+}
+
+function card(tab, sec, i, showFrom) {
+  const key = `${tab.id}:${sec.n || "x" + i}:${sec.title}`;
+  const d = document.createElement("details");
+  d.className = "sec" + (done.has(key) ? " is-done" : "");
+  d.innerHTML = `<summary>
+      <span class="num">${sec.n ? "§" + sec.n : "★"}</span>
+      <span class="title">${showFrom ? `<span class="from">${tab.label}</span><br>` : ""}${esc(sec.title)}</span>
+      <label class="done-box"><input type="checkbox" ${done.has(key) ? "checked" : ""} aria-label="Marcar como estudado"> ok</label>
+    </summary><div class="body"></div>`;
+  const box = d.querySelector("input");
+  box.addEventListener("click", (e) => e.stopPropagation());
+  box.addEventListener("change", () => {
+    box.checked ? done.add(key) : done.delete(key);
+    d.classList.toggle("is-done", box.checked);
+    store.set("done", [...done]);
+    updateProgress();
+  });
+  // só desenha o conteúdo quando abre (página leve no telemóvel)
+  d.addEventListener("toggle", () => {
+    const body = d.querySelector(".body");
+    if (d.open && !body.innerHTML) body.innerHTML = renderBody(sec);
+  });
+  return d;
+}
+
+function currentTab() { return TABS.find((t) => "#" + t.id === location.hash) || TABS[0]; }
+
+function updateProgress() {
+  const t = currentTab();
+  const total = t.sections.length;
+  const n = t.sections.filter((s, i) => done.has(`${t.id}:${s.n || "x" + i}:${s.title}`)).length;
+  $("progress").textContent = `${n}/${total} estudadas`;
+}
+
+function render() {
+  const q = norm($("q").value.trim());
+  const list = $("list");
+  list.innerHTML = "";
+  const t = currentTab();
+  document.querySelectorAll("#tabs a").forEach((a) => a.setAttribute("aria-current", a.hash === "#" + t.id && !q ? "page" : "false"));
+  if (q) {
+    let hits = 0;
+    for (const tab of TABS) tab.sections.forEach((s, i) => {
+      if (norm(s.title + "\n" + s.body).includes(q)) { list.append(card(tab, s, i, true)); hits++; }
+    });
+    list.prepend(Object.assign(document.createElement("p"), { className: "hint", textContent: hits ? `${hits} secções com "${$("q").value.trim()}" — abre para ver.` : "Nada encontrado. Tenta outra palavra (ex.: sort, Map, ponteiros)." }));
+  } else {
+    list.append(Object.assign(document.createElement("p"), { className: "hint", textContent: `${t.file} · toca numa secção para abrir · marca “ok” quando a dominares` }));
+    t.sections.forEach((s, i) => list.append(card(t, s, i, false)));
+    if (t.id === "inicio") list.querySelector("details").open = true;
+  }
+  const foot = document.createElement("footer");
+  foot.textContent = `Gerado a ${BUILT} a partir do repo cheatSheet. O progresso fica guardado só neste browser.`;
+  list.append(foot);
+  $("toggle").textContent = "Abrir tudo";
+  updateProgress();
+}
+
+$("tabs").innerHTML = TABS.map((t) => `<a href="#${t.id}">${t.label}</a>`).join("");
+$("tabs").addEventListener("click", () => { $("q").value = ""; });
+$("q").addEventListener("input", render);
+$("toggle").addEventListener("click", () => {
+  const all = [...document.querySelectorAll("details.sec")];
+  const open = all.some((d) => !d.open);
+  all.forEach((d) => (d.open = open));
+  $("toggle").textContent = open ? "Fechar tudo" : "Abrir tudo";
+});
+window.addEventListener("hashchange", () => { scrollTo(0, 0); render(); });
+render();
+</script>
