@@ -1,13 +1,19 @@
 # Cheat Sheet — JavaScript, LeetCode and Payments
 
 Personal notes to get the basics back at my fingertips.
-Every `.js` file runs on its own and tests itself.
+Each case: what it's used for, how you use it, and the result.
+
+```js
+//--------------------------------------------------------------------
+// length - // Shows how many characters a string has.
+
+"Tiago".length; // result ==> 5
+// note: it's a property, so no ().
+```
 
 ```bash
-node 01-JS-Fundamentals.js   # ✅ Fundamentals OK
-node 02-LeetCode-Easy.js     # ✅ Easy OK
-node 03-LeetCode-Medium.js   # ✅ Medium OK
-node 04-Payments.js          # ✅ Payments OK
+node check-results.js        # runs every file and checks every "// result ==>" value
+node 01-JS-Fundamentals.js   # or run one file on its own
 node build-html.js           # regenerates cheatsheet.html (mobile study page)
 ```
 

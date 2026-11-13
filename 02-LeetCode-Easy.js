@@ -1,5 +1,5 @@
 // LEETCODE PATTERNS (easy level) — JavaScript
-// Run with: node 02-LeetCode-Easy.js → if nothing breaks, every example is right.
+// Run with: node 02-LeetCode-Easy.js · check every "// result ==>" with: node check-results.js 02-LeetCode-Easy.js
 
 // INDEX (Ctrl+F "§N")
 //   §0 HOW TO ATTACK A PROBLEM
@@ -14,9 +14,6 @@
 //   §9 BINARY TREES
 //   §10 MATH / BITS
 //   §11 PRACTICE LIST
-
-const assert = require("node:assert/strict");
-const check = (actual, expected) => assert.deepEqual(actual, expected); // stops the file if an example is wrong
 
 // §0 ── HOW TO ATTACK A PROBLEM ──────────
 // 1. Read the examples, then make up 1 small case and 1 weird case (empty, 1 element, negatives, repeats).
@@ -36,21 +33,23 @@ const check = (actual, expected) => assert.deepEqual(actual, expected); // stops
 //--------------------------------------------------------------------
 // sort() - // Used to order an array. Trick: always give it (a, b) => a - b, without it numbers are sorted like words.
 
-check([10, 1, 2].sort(), [1, 10, 2]); // result ==> [1, 10, 2]  (wrong! compared as text)
-check([10, 1, 2].sort((a, b) => a - b), [1, 2, 10]); // result ==> [1, 2, 10]  (small to big)
-check([10, 1, 2].sort((a, b) => b - a), [10, 2, 1]); // result ==> [10, 2, 1]  (big to small)
+[10, 1, 2].sort(); // result ==> [1, 10, 2]  (wrong! compared as text)
+[10, 1, 2].sort((a, b) => a - b); // result ==> [1, 2, 10]  (small to big)
+[10, 1, 2].sort((a, b) => b - a); // result ==> [10, 2, 1]  (big to small)
 const orig = [3, 1, 2];
 const copy = orig.toSorted((a, b) => a - b);
-check(orig, [3, 1, 2]); // result ==> [3, 1, 2]  (toSorted left the original alone)
-check(copy, [1, 2, 3]); // result ==> [1, 2, 3]
+orig; // result ==> [3, 1, 2]  (toSorted left the original alone)
+copy; // result ==> [1, 2, 3]
+// uses: sort / toSorted → 01 §11 · arrow function → 01 §16
 // note: sort() changes the original array; toSorted() gives you a new one.
 
 //--------------------------------------------------------------------
 // Math.floor() - // Used to cut the decimals off a division. Trick: JS has no integer division, so 7 / 2 is 3.5.
 
-check(7 / 2, 3.5); // result ==> 3.5
-check(Math.floor(7 / 2), 3); // result ==> 3
-check(Math.trunc(-7 / 2), -3); // result ==> -3  (Math.floor would give -4)
+7 / 2; // result ==> 3.5
+Math.floor(7 / 2); // result ==> 3
+Math.trunc(-7 / 2); // result ==> -3  (Math.floor would give -4)
+// uses: Math.floor / Math.trunc → 01 §8
 
 //--------------------------------------------------------------------
 // split("") - // Used to change letters inside a string. Trick: strings can't be changed, so turn it into an array first.
@@ -58,51 +57,58 @@ check(Math.trunc(-7 / 2), -3); // result ==> -3  (Math.floor would give -4)
 const s = "abc";
 const arr = s.split(""); // or [...s]
 arr[0] = "x";
-check(arr.join(""), "xbc"); // result ==> "xbc"
+arr.join(""); // result ==> "xbc"
+// uses: split / join → 01 §7 · spread [...s] → 01 §13
 // note: s[0] = "x" does nothing and gives no error.
 
 //--------------------------------------------------------------------
 // === on arrays - // Compares if it is the SAME array, not the same contents. Trick: join() both and compare the text.
 
-check([1, 2] === [1, 2], false); // result ==> false
-check([1, 2].join() === [1, 2].join(), true); // result ==> true
+[1, 2] === [1, 2]; // result ==> false
+[1, 2].join() === [1, 2].join(); // result ==> true
+// uses: === → 01 §3 · join → 01 §7 · objects compare by reference → 01 §15
 
 //--------------------------------------------------------------------
 // Infinity - // Used as the starting value when looking for the smallest. Trick: -Infinity when looking for the biggest.
 
 let min = Infinity;
 for (const n of [5, 3, 8]) min = Math.min(min, n);
-check(min, 3); // result ==> 3
+min; // result ==> 3
+// uses: Infinity / Math.min → 01 §8 · for...of → 01 §6
 
 //--------------------------------------------------------------------
 // Array.from() - // Used to build a matrix full of zeros. Trick: never fill([]), every row would be the same array.
 
 const matrix = Array.from({ length: 2 }, () => new Array(3).fill(0));
 matrix[0][0] = 1;
-check(matrix, [[1, 0, 0], [0, 0, 0]]); // result ==> only the first row changed
+matrix; // result ==> [[1, 0, 0], [0, 0, 0]]  (only the first row changed)
+// uses: Array.from / fill → 01 §9
 
 //--------------------------------------------------------------------
 // at(-1) - // Used to get the last element. Trick: negative numbers count from the end.
 
-check([1, 2, 3].at(-1), 3); // result ==> 3
+[1, 2, 3].at(-1); // result ==> 3
+// uses: at() → 01 §10 (arrays) and 01 §7 (strings)
 
 //--------------------------------------------------------------------
 // charCodeAt() - // Used to turn a letter into a number and back. Trick: letter minus "a" gives its place in the alphabet.
 
-check("a".charCodeAt(0), 97); // result ==> 97
-check(String.fromCharCode(98), "b"); // result ==> "b"
-check("c".charCodeAt(0) - "a".charCodeAt(0), 2); // result ==> 2  (a = 0, b = 1, c = 2)
+"a".charCodeAt(0); // result ==> 97
+String.fromCharCode(98); // result ==> "b"
+"c".charCodeAt(0) - "a".charCodeAt(0); // result ==> 2  (a = 0, b = 1, c = 2)
+// uses: charCodeAt / String.fromCharCode → 01 §7
 
 //--------------------------------------------------------------------
 // Digits of a number - // Used to get each digit. Trick: % 10 gives the last digit, Math.floor(/ 10) drops it.
 
-check(String(1234).split("").map(Number), [1, 2, 3, 4]); // result ==> [1, 2, 3, 4]
+String(1234).split("").map(Number); // result ==> [1, 2, 3, 4]
 let num = 1234, digitSum = 0;
 while (num > 0) {
   digitSum += num % 10; // last digit
   num = Math.floor(num / 10); // drop the last digit
 }
-check(digitSum, 10); // result ==> 10  (1 + 2 + 3 + 4)
+digitSum; // result ==> 10  (1 + 2 + 3 + 4)
+// uses: split → 01 §7 · map(Number) → 01 §8 · % and += → 01 §3 · Math.floor → 01 §8 · while → 01 §6
 
 // §2 ── HASH MAP / SET ──────────
 
@@ -115,7 +121,8 @@ function count(items) {
   return freq;
 }
 
-check(count("banana").get("a"), 3); // result ==> 3
+count("banana").get("a"); // result ==> 3
+// uses: Map get/set → 01 §14 · for...of → 01 §6 · ?? → 01 §3
 // note: Map beats a plain object for counting: any key type and it has .size.
 
 //--------------------------------------------------------------------
@@ -131,8 +138,9 @@ function twoSum(nums, target) {
   return [];
 }
 
-check(twoSum([2, 7, 11, 15], 9), [0, 1]); // result ==> [0, 1]  (2 + 7 = 9)
-check(twoSum([3, 3], 6), [0, 1]); // result ==> [0, 1]
+twoSum([2, 7, 11, 15], 9); // result ==> [0, 1]  (2 + 7 = 9)
+twoSum([3, 3], 6); // result ==> [0, 1]
+// uses: Map has/get/set → 01 §14 · for loop → 01 §6
 // note: brute force is two for loops = O(n²); the Map makes it O(n).
 
 //--------------------------------------------------------------------
@@ -140,8 +148,9 @@ check(twoSum([3, 3], 6), [0, 1]); // result ==> [0, 1]
 
 const containsDuplicate = (nums) => new Set(nums).size !== nums.length;
 
-check(containsDuplicate([1, 2, 3, 1]), true); // result ==> true
-check(containsDuplicate([1, 2, 3]), false); // result ==> false
+containsDuplicate([1, 2, 3, 1]); // result ==> true
+containsDuplicate([1, 2, 3]); // result ==> false
+// uses: Set and .size → 01 §14 · arrow function → 01 §16
 
 //--------------------------------------------------------------------
 // Valid Anagram (LC 242) - // Used to know if two words have the same letters. Trick: count the first word, subtract the second.
@@ -156,8 +165,9 @@ function isAnagram(a, b) {
   return true;
 }
 
-check(isAnagram("anagram", "nagaram"), true); // result ==> true
-check(isAnagram("rat", "car"), false); // result ==> false
+isAnagram("anagram", "nagaram"); // result ==> true
+isAnagram("rat", "car"); // result ==> false
+// uses: Map get/set → 01 §14 · for...of → 01 §6 · ! on undefined/0 → 01 §4
 
 //--------------------------------------------------------------------
 // First Unique Character (LC 387) - // Used to find the first letter that shows up only once. Trick: count first, then walk again.
@@ -168,8 +178,9 @@ function firstUniqChar(s) {
   return -1;
 }
 
-check(firstUniqChar("leetcode"), 0); // result ==> 0  (the "l")
-check(firstUniqChar("aabb"), -1); // result ==> -1  (none)
+firstUniqChar("leetcode"); // result ==> 0  (the "l")
+firstUniqChar("aabb"); // result ==> -1  (none)
+// uses: Map get → 01 §14 · for loop → 01 §6 · s[i] → 01 §7
 
 //--------------------------------------------------------------------
 // Group Anagrams (LC 49) - // Used to put words with the same letters together. Trick: the sorted word is the Map key.
@@ -184,7 +195,8 @@ function groupAnagrams(words) {
   return [...groups.values()];
 }
 
-check(groupAnagrams(["eat", "tea", "tan", "nat"]), [["eat", "tea"], ["tan", "nat"]]); // result ==> [["eat", "tea"], ["tan", "nat"]]
+groupAnagrams(["eat", "tea", "tan", "nat"]); // result ==> [["eat", "tea"], ["tan", "nat"]]
+// uses: Map has/get/set/values → 01 §14 · spread [...w] → 01 §13 · sort → 01 §11 · join → 01 §7 · push → 01 §9
 
 // §3 ── TWO POINTERS ──────────
 
@@ -208,8 +220,9 @@ function isPalindrome(s) {
   return true;
 }
 
-check(isPalindrome("A man, a plan, a canal: Panama"), true); // result ==> true
-check(isPalindrome("race a car"), false); // result ==> false
+isPalindrome("A man, a plan, a canal: Panama"); // result ==> true
+isPalindrome("race a car"); // result ==> false
+// uses: toLowerCase / replace → 01 §7 · regex /[^a-z0-9]/g → 01 §22 · while → 01 §6
 
 //--------------------------------------------------------------------
 // Reverse String (LC 344) - // Used to flip an array of letters in place. Trick: swap the two ends with [a, b] = [b, a].
@@ -224,7 +237,10 @@ function reverseString(chars) {
   return chars;
 }
 
-check(reverseString(["h", "e", "y"]), ["y", "e", "h"]); // result ==> ["y", "e", "h"]
+const letters = ["h", "e", "y"];
+reverseString(letters);
+letters; // result ==> ["y", "e", "h"]
+// uses: swap [a, b] = [b, a] → 01 §13 · while → 01 §6
 
 //--------------------------------------------------------------------
 // Remove Duplicates from Sorted Array (LC 26) - // Used to keep each number once, at the front. Trick: one "reader" and one "writer" walk the same way.
@@ -242,8 +258,9 @@ function removeDuplicates(nums) {
 }
 
 const dups = [0, 0, 1, 1, 1, 2, 2, 3];
-check(removeDuplicates(dups), 4); // result ==> 4  (how many unique)
-check(dups.slice(0, 4), [0, 1, 2, 3]); // result ==> [0, 1, 2, 3]
+removeDuplicates(dups); // result ==> 4  (how many unique)
+dups.slice(0, 4); // result ==> [0, 1, 2, 3]
+// uses: for loop → 01 §6 · ++ → 01 §3 · slice → 01 §10
 
 //--------------------------------------------------------------------
 // Move Zeroes (LC 283) - // Used to push every 0 to the end. Trick: same reader/writer, then fill the rest with 0.
@@ -255,7 +272,10 @@ function moveZeroes(nums) {
   return nums;
 }
 
-check(moveZeroes([0, 1, 0, 3, 12]), [1, 3, 12, 0, 0]); // result ==> [1, 3, 12, 0, 0]
+const nums = [0, 1, 0, 3, 12];
+moveZeroes(nums);
+nums; // result ==> [1, 3, 12, 0, 0]
+// uses: for...of / while → 01 §6 · write++ → 01 §3
 
 //--------------------------------------------------------------------
 // Merge Sorted Array (LC 88) - // Used to merge two sorted arrays into the first one. Trick: fill from the BACK, so nothing gets overwritten.
@@ -269,7 +289,10 @@ function merge(nums1, m, nums2, n) {
   return nums1;
 }
 
-check(merge([1, 2, 3, 0, 0, 0], 3, [2, 5, 6], 3), [1, 2, 2, 3, 5, 6]); // result ==> [1, 2, 2, 3, 5, 6]
+const nums1 = [1, 2, 3, 0, 0, 0];
+merge(nums1, 3, [2, 5, 6], 3);
+nums1; // result ==> [1, 2, 2, 3, 5, 6]
+// uses: while → 01 §6 · && and k-- → 01 §3
 
 // §4 ── SLIDING WINDOW ──────────
 
@@ -288,8 +311,9 @@ function maxProfit(prices) {
   return best;
 }
 
-check(maxProfit([7, 1, 5, 3, 6, 4]), 5); // result ==> 5  (buy at 1, sell at 6)
-check(maxProfit([7, 6, 4, 3, 1]), 0); // result ==> 0  (only goes down)
+maxProfit([7, 1, 5, 3, 6, 4]); // result ==> 5  (buy at 1, sell at 6)
+maxProfit([7, 6, 4, 3, 1]); // result ==> 0  (only goes down)
+// uses: Infinity / Math.min / Math.max → 01 §8 · for...of → 01 §6
 
 //--------------------------------------------------------------------
 // Fixed window of size k - // Used for the best sum of k numbers in a row. Trick: add the one coming in, subtract the one going out.
@@ -305,7 +329,8 @@ function maxSumK(nums, k) {
   return best;
 }
 
-check(maxSumK([1, 12, -5, -6, 50, 3], 4), 51); // result ==> 51  (12 - 5 - 6 + 50)
+maxSumK([1, 12, -5, -6, 50, 3], 4); // result ==> 51  (12 - 5 - 6 + 50)
+// uses: for loop → 01 §6 · += → 01 §3 · Math.max → 01 §8
 
 //--------------------------------------------------------------------
 // Longest Substring Without Repeating Characters (LC 3) - // Used to find the longest piece with no repeated letter. Trick: a Set holds the window; shrink while it repeats.
@@ -321,8 +346,9 @@ function lengthOfLongestSubstring(s) {
   return best;
 }
 
-check(lengthOfLongestSubstring("abcabcbb"), 3); // result ==> 3  ("abc")
-check(lengthOfLongestSubstring(""), 0); // result ==> 0
+lengthOfLongestSubstring("abcabcbb"); // result ==> 3  ("abc")
+lengthOfLongestSubstring(""); // result ==> 0
+// uses: Set has/add/delete → 01 §14 · for / while → 01 §6 · Math.max → 01 §8
 // note: it's a medium, but it is THE variable-window template.
 
 // §5 ── PREFIX SUM / KADANE ──────────
@@ -337,14 +363,16 @@ function prefixSums(nums) {
 }
 
 const P = prefixSums([1, 2, 3, 4]);
-check(P[3] - P[1], 2 + 3); // result ==> 5  (sum of index 1 to 2)
+P[3] - P[1]; // result ==> 5  (sum of index 1 to 2)
+// uses: push → 01 §9 · at(-1) → 01 §10 · for...of → 01 §6
 
 //--------------------------------------------------------------------
 // Running Sum (LC 1480) - // Used to add each number to all the ones before it. Trick: it's the prefix sum without the 0.
 
 const runningSum = (nums) => prefixSums(nums).slice(1);
 
-check(runningSum([1, 2, 3, 4]), [1, 3, 6, 10]); // result ==> [1, 3, 6, 10]
+runningSum([1, 2, 3, 4]); // result ==> [1, 3, 6, 10]
+// uses: slice → 01 §10 · arrow function → 01 §16
 
 //--------------------------------------------------------------------
 // Maximum Subarray (LC 53) - // Used to find the biggest sum of numbers in a row. Trick: at each number ask "keep going, or start again here?" (Kadane).
@@ -358,8 +386,9 @@ function maxSubArray(nums) {
   return best;
 }
 
-check(maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4]), 6); // result ==> 6  (4 - 1 + 2 + 1)
-check(maxSubArray([-3, -1]), -1); // result ==> -1
+maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4]); // result ==> 6  (4 - 1 + 2 + 1)
+maxSubArray([-3, -1]); // result ==> -1
+// uses: Math.max → 01 §8 · for loop → 01 §6
 // note: start with nums[0], not 0, or an all-negative array gives 0.
 
 // §6 ── BINARY SEARCH ──────────
@@ -378,8 +407,9 @@ function binarySearch(nums, target) {
   return -1;
 }
 
-check(binarySearch([-1, 0, 3, 5, 9, 12], 9), 4); // result ==> 4
-check(binarySearch([-1, 0, 3, 5, 9, 12], 2), -1); // result ==> -1  (not there)
+binarySearch([-1, 0, 3, 5, 9, 12], 9); // result ==> 4
+binarySearch([-1, 0, 3, 5, 9, 12], 2); // result ==> -1  (not there)
+// uses: Math.floor → 01 §8 · while → 01 §6 · if/else → 01 §5
 // note: O(log n). Keep `l <= r` and `mid ± 1` — that's the safest version to memorize.
 
 //--------------------------------------------------------------------
@@ -396,8 +426,9 @@ function searchInsert(nums, target) {
   return l;
 }
 
-check(searchInsert([1, 3, 5, 6], 2), 1); // result ==> 1  (between 1 and 3)
-check(searchInsert([1, 3, 5, 6], 7), 4); // result ==> 4  (at the end)
+searchInsert([1, 3, 5, 6], 2); // result ==> 1  (between 1 and 3)
+searchInsert([1, 3, 5, 6], 7); // result ==> 4  (at the end)
+// uses: Math.floor → 01 §8 · while → 01 §6 · if/else → 01 §5
 
 // §7 ── STACK ──────────
 
@@ -418,9 +449,10 @@ function isValid(s) {
   return stack.length === 0;
 }
 
-check(isValid("()[]{}"), true); // result ==> true
-check(isValid("([)]"), false); // result ==> false  (wrong order)
-check(isValid("(("), false); // result ==> false  (never closed)
+isValid("()[]{}"); // result ==> true
+isValid("([)]"); // result ==> false  (wrong order)
+isValid("(("); // result ==> false  (never closed)
+// uses: object as lookup + "key" in obj → 01 §12 · push / pop → 01 §9 · for...of → 01 §6
 // note: a queue is push() + shift(), but shift() is O(n); if you hit Time Limit, walk it with an index instead.
 
 // §8 ── LINKED LIST ──────────
@@ -456,7 +488,8 @@ function reverseList(head) {
   return prev;
 }
 
-check(toArray(reverseList(toList([1, 2, 3]))), [3, 2, 1]); // result ==> [3, 2, 1]
+toArray(reverseList(toList([1, 2, 3]))); // result ==> [3, 2, 1]
+// uses: class + constructor → 01 §19 · reduceRight (like reduce) → 01 §10 · while / for → 01 §6
 
 //--------------------------------------------------------------------
 // Merge Two Sorted Lists (LC 21) - // Used to join two sorted lists into one. Trick: a fake "dummy" first node saves you the special cases.
@@ -473,7 +506,8 @@ function mergeTwoLists(a, b) {
   return dummy.next;
 }
 
-check(toArray(mergeTwoLists(toList([1, 2, 4]), toList([1, 3, 4]))), [1, 1, 2, 3, 4, 4]); // result ==> [1, 1, 2, 3, 4, 4]
+toArray(mergeTwoLists(toList([1, 2, 4]), toList([1, 3, 4]))); // result ==> [1, 1, 2, 3, 4, 4]
+// uses: new + class → 01 §19 · while → 01 §6 · && and ?? → 01 §3
 
 //--------------------------------------------------------------------
 // Middle of the Linked List (LC 876) - // Used to find the middle node. Trick: slow moves 1, fast moves 2; when fast ends, slow is in the middle.
@@ -487,7 +521,8 @@ function middleNode(head) {
   return slow;
 }
 
-check(middleNode(toList([1, 2, 3, 4, 5])).val, 3); // result ==> 3
+middleNode(toList([1, 2, 3, 4, 5])).val; // result ==> 3
+// uses: while → 01 §6 · && → 01 §3 · null is falsy → 01 §4
 
 //--------------------------------------------------------------------
 // Linked List Cycle (LC 141) - // Used to know if the list loops forever. Trick: same slow/fast — if they meet, there's a loop.
@@ -504,8 +539,9 @@ function hasCycle(head) {
 
 const cycle = toList([1, 2, 3]);
 cycle.next.next.next = cycle; // 3 → 1
-check(hasCycle(cycle), true); // result ==> true
-check(hasCycle(toList([1, 2])), false); // result ==> false
+hasCycle(cycle); // result ==> true
+hasCycle(toList([1, 2])); // result ==> false
+// uses: while → 01 §6 · === on objects (same node) → 01 §3
 
 // §9 ── BINARY TREES ──────────
 
@@ -531,7 +567,8 @@ const tree = new TreeNode(3, new TreeNode(9), new TreeNode(20, new TreeNode(15),
 
 const maxDepth = (node) => (node ? 1 + Math.max(maxDepth(node.left), maxDepth(node.right)) : 0);
 
-check(maxDepth(tree), 3); // result ==> 3
+maxDepth(tree); // result ==> 3
+// uses: arrow function → 01 §16 · ternary ? : → 01 §3 · Math.max → 01 §8
 
 //--------------------------------------------------------------------
 // Invert Binary Tree (LC 226) - // Used to mirror the tree. Trick: swap left and right, after inverting each one.
@@ -541,6 +578,7 @@ function invertTree(node) {
   [node.left, node.right] = [invertTree(node.right), invertTree(node.left)];
   return node;
 }
+// uses: swap [a, b] = [b, a] → 01 §13 · ! on null → 01 §4
 
 //--------------------------------------------------------------------
 // Same Tree (LC 100) - // Used to know if two trees are equal. Trick: same value here, and same on both sides.
@@ -550,7 +588,8 @@ function isSameTree(p, q) {
   return p.val === q.val && isSameTree(p.left, q.left) && isSameTree(p.right, q.right);
 }
 
-check(isSameTree(invertTree(invertTree(tree)), tree), true); // result ==> true  (inverting twice gives it back)
+isSameTree(invertTree(invertTree(tree)), tree); // result ==> true  (inverting twice gives it back)
+// uses: ! / || / && → 01 §3 · null is falsy → 01 §4
 
 //--------------------------------------------------------------------
 // Path Sum (LC 112) - // Used to know if a top-to-leaf path adds up to target. Trick: subtract each node from target on the way down.
@@ -562,8 +601,9 @@ function hasPathSum(node, target) {
   return hasPathSum(node.left, rest) || hasPathSum(node.right, rest);
 }
 
-check(hasPathSum(tree, 30), true); // result ==> true  (3 + 20 + 7)
-check(hasPathSum(tree, 5), false); // result ==> false
+hasPathSum(tree, 30); // result ==> true  (3 + 20 + 7)
+hasPathSum(tree, 5); // result ==> false
+// uses: ! / && / || → 01 §3 · if → 01 §5
 
 //--------------------------------------------------------------------
 // Inorder Traversal (LC 94) - // Used to visit every node (DFS). Trick: only WHERE you push changes: pre = push-left-right, in = left-push-right, post = left-right-push.
@@ -576,7 +616,8 @@ function inorder(node, out = []) {
   return out;
 }
 
-check(inorder(tree), [9, 3, 15, 20, 7]); // result ==> [9, 3, 15, 20, 7]
+inorder(tree); // result ==> [9, 3, 15, 20, 7]
+// uses: default parameter out = [] → 01 §16 · push → 01 §9
 // note: in-order on a BST gives the values sorted.
 
 //--------------------------------------------------------------------
@@ -598,7 +639,8 @@ function levelOrder(root) {
   return levels;
 }
 
-check(levelOrder(tree), [[3], [9, 20], [15, 7]]); // result ==> [[3], [9, 20], [15, 7]]
+levelOrder(tree); // result ==> [[3], [9, 20], [15, 7]]
+// uses: push / shift → 01 §9 · while / for → 01 §6
 // note: it's a medium, but many easy ones are built on it.
 
 // §10 ── MATH / BITS ──────────
@@ -608,14 +650,16 @@ check(levelOrder(tree), [[3], [9, 20], [15, 7]]); // result ==> [[3], [9, 20], [
 
 const singleNumber = (nums) => nums.reduce((acc, n) => acc ^ n, 0);
 
-check(singleNumber([4, 1, 2, 1, 2]), 4); // result ==> 4
+singleNumber([4, 1, 2, 1, 2]); // result ==> 4
+// uses: reduce → 01 §10 · arrow function → 01 §16
 
 //--------------------------------------------------------------------
 // Missing Number (LC 268) - // Used to find the number missing from 0..n. Trick: the sum it should be minus the sum it is.
 
 const missingNumber = (nums) => (nums.length * (nums.length + 1)) / 2 - nums.reduce((a, b) => a + b, 0);
 
-check(missingNumber([3, 0, 1]), 2); // result ==> 2  (6 - 4)
+missingNumber([3, 0, 1]); // result ==> 2  (6 - 4)
+// uses: reduce → 01 §10 · arrow function → 01 §16
 
 //--------------------------------------------------------------------
 // Palindrome Number (LC 9) - // Used to know if a number reads the same both ways. Trick: build it backwards with % 10, no strings.
@@ -630,17 +674,19 @@ function isPalindromeNumber(x) {
   return reversed === original;
 }
 
-check(isPalindromeNumber(121), true); // result ==> true
-check(isPalindromeNumber(10), false); // result ==> false  (01 isn't 10)
+isPalindromeNumber(121); // result ==> true
+isPalindromeNumber(10); // result ==> false  (01 isn't 10)
+// uses: % → 01 §3 · Math.floor → 01 §8 · while → 01 §6
 
 //--------------------------------------------------------------------
 // Power of Two (LC 231) - // Used to know if n is 1, 2, 4, 8... Trick: n & (n - 1) is 0 only for powers of 2.
 
-check(7 % 2 === 1, true); // result ==> true  (odd: % 2 gives 1)
+7 % 2 === 1; // result ==> true  (odd: % 2 gives 1)
 const isPowerOfTwo = (n) => n > 0 && (n & (n - 1)) === 0; // 8 = 1000, 7 = 0111 → & gives 0
 
-check(isPowerOfTwo(16), true); // result ==> true
-check(isPowerOfTwo(12), false); // result ==> false
+isPowerOfTwo(16); // result ==> true
+isPowerOfTwo(12); // result ==> false
+// uses: % and && → 01 §3 · arrow function → 01 §16
 
 //--------------------------------------------------------------------
 // Climbing Stairs (LC 70) - // Used to count the ways up n steps, 1 or 2 at a time. Trick: each step = the two before it added (Fibonacci).
@@ -651,8 +697,9 @@ function climbStairs(n) {
   return b;
 }
 
-check(climbStairs(2), 2); // result ==> 2
-check(climbStairs(5), 8); // result ==> 8
+climbStairs(2); // result ==> 2
+climbStairs(5); // result ==> 8
+// uses: swap [a, b] = [b, a + b] → 01 §13 · for loop → 01 §6
 // note: your first dynamic programming — keep only the last two answers.
 
 // §11 ── PRACTICE LIST ──────────

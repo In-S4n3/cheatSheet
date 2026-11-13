@@ -1,11 +1,9 @@
 // PAYMENTS / CORE BANKING — runnable examples for 04-Payments.md
 // Run: node 04-Payments.js   → ends with "✅ Payments OK"
-// Every example is checked: if one is wrong, the file stops with an error.
+// Every "// result ==>" is checked by: node check-results.js 04-Payments.js
 
 const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
-
-const check = (actual, expected) => assert.deepEqual(actual, expected); // stops the file if an example is wrong
 
 // =====================================================================================
 // §1 MONEY IN CODE
@@ -14,14 +12,14 @@ const check = (actual, expected) => assert.deepEqual(actual, expected); // stops
 //--------------------------------------------------------------------
 // float - // Used to show why money is never a float: 0.1 can't be stored exactly.
 
-check(0.1 + 0.2 === 0.3, false); // result ==> false
+0.1 + 0.2 === 0.3; // result ==> false
 
 //--------------------------------------------------------------------
 // EXPONENT - // Used to know how many decimal places a currency has (ISO 4217).
 
 const EXPONENT = { JPY: 0, EUR: 2, USD: 2, BHD: 3 };
 
-check(EXPONENT.EUR, 2); // result ==> 2 (1 euro = 100 cents)
+EXPONENT.EUR; // result ==> 2  (1 euro = 100 cents)
 // note: never assume 2. JPY has 0, BHD has 3.
 
 //--------------------------------------------------------------------
@@ -37,10 +35,10 @@ function toMinor(str, currency) {
   return str.startsWith("-") ? -minor : minor;
 }
 
-check(toMinor("12.34", "EUR"), 1234n); // result ==> 1234n
-check(toMinor("500", "JPY"), 500n); // result ==> 500n
-check(toMinor("1.234", "BHD"), 1234n); // result ==> 1234n
-assert.throws(() => toMinor("1.234", "EUR")); // result ==> throws: EUR only has 2 decimal places
+toMinor("12.34", "EUR"); // result ==> 1234n
+toMinor("500", "JPY"); // result ==> 500n
+toMinor("1.234", "BHD"); // result ==> 1234n
+assert.throws(() => toMinor("1.234", "EUR")); // note: throws — EUR only has 2 decimal places
 
 //--------------------------------------------------------------------
 // fromMinor() - // Used to turn cents back into text for showing it.
@@ -53,8 +51,8 @@ function fromMinor(minor, currency) {
   return (neg ? "-" : "") + out;
 }
 
-check(fromMinor(5n, "EUR"), "0.05"); // result ==> "0.05"
-check(fromMinor(-1234n, "BHD"), "-1.234"); // result ==> "-1.234"
+fromMinor(5n, "EUR"); // result ==> "0.05"
+fromMinor(-1234n, "BHD"); // result ==> "-1.234"
 
 //--------------------------------------------------------------------
 // divHalfEven() - // Used to divide and round a tie to the even number (banker's rounding).
@@ -68,16 +66,16 @@ function divHalfEven(a, b) {
   return q;
 }
 
-check(divHalfEven(25n, 10n), 2n); // result ==> 2n (2.5 → 2, even)
-check(divHalfEven(35n, 10n), 4n); // result ==> 4n (3.5 → 4, even)
-check(divHalfEven(26n, 10n), 3n); // result ==> 3n
-check(divHalfEven(-25n, 10n), -2n); // result ==> -2n
+divHalfEven(25n, 10n); // result ==> 2n  (2.5 → 2, even)
+divHalfEven(35n, 10n); // result ==> 4n  (3.5 → 4, even)
+divHalfEven(26n, 10n); // result ==> 3n
+divHalfEven(-25n, 10n); // result ==> -2n
 // note: half-up always rounds ties up; over millions of roundings that adds up. Half-even does not.
 
 //--------------------------------------------------------------------
 // basis points - // Used to write rates as whole numbers: 150 bp = 1.5%.
 
-check(divHalfEven(123456n * 150n, 10000n), 1852n); // result ==> 1852n (€1234.56 × 1.5% = €18.5184 → €18.52)
+divHalfEven(123456n * 150n, 10000n); // result ==> 1852n  (€1234.56 × 1.5% = €18.5184 → €18.52)
 
 //--------------------------------------------------------------------
 // allocate() - // Used to split an amount without losing a cent; the leftover goes to the largest remainder.
@@ -92,10 +90,9 @@ function allocate(total, ratios) {
   return parts;
 }
 
-const split = allocate(1000n, [1n, 1n, 1n]); // €10.00 split three ways
-check(split, [334n, 333n, 333n]); // result ==> [334n, 333n, 333n]
-check(split.reduce((a, b) => a + b, 0n), 1000n); // result ==> 1000n (not a cent lost)
-check(allocate(100n, [70n, 30n]), [70n, 30n]); // result ==> [70n, 30n]
+const split = allocate(1000n, [1n, 1n, 1n]); // result ==> [334n, 333n, 333n]  (€10.00 split three ways)
+split.reduce((a, b) => a + b, 0n); // result ==> 1000n  (not a cent lost)
+allocate(100n, [70n, 30n]); // result ==> [70n, 30n]
 
 // =====================================================================================
 // §2 DOUBLE-ENTRY LEDGER (Vault-style mini-ledger: pending/committed phases)
@@ -190,34 +187,34 @@ const L = new Ledger();
 L.openInternal("bank:cash");
 L.transfer("dep-1", "bank:cash", "alice", 10000n); // deposit €100.00
 
-check(L.balance("alice"), 10000n); // result ==> 10000n
-assert.throws(() => L.transfer("dep-1", "bank:cash", "alice", 1n), /duplicate/); // result ==> throws: same tx id twice
+L.balance("alice"); // result ==> 10000n
+assert.throws(() => L.transfer("dep-1", "bank:cash", "alice", 1n), /duplicate/); // note: throws — same tx id twice
 
 //--------------------------------------------------------------------
 // authorise() - // Used to hold money for a card payment without moving it yet.
 
 L.authorise("auth-1", "alice", "merchant", 3000n); // €30.00 purchase, hold only
 
-check(L.balance("alice"), 10000n); // result ==> 10000n (settled is still €100)
-check(L.available("alice"), 7000n); // result ==> 7000n (€70 can still be spent)
-assert.throws(() => L.authorise("auth-2", "alice", "merchant", 8000n), /insufficient/); // result ==> throws: insufficient funds
+L.balance("alice"); // result ==> 10000n  (settled is still €100)
+L.available("alice"); // result ==> 7000n  (€70 can still be spent)
+assert.throws(() => L.authorise("auth-2", "alice", "merchant", 8000n), /insufficient/); // note: throws — insufficient funds
 
 //--------------------------------------------------------------------
 // settle() - // Used to release the hold and really move the money; it can be less than the hold.
 
 L.settle("set-1", "auth-1", 2500n); // partial capture €25.00
 
-check(L.balance("alice"), 7500n); // result ==> 7500n
-check(L.balance("alice", "pending"), 0n); // result ==> 0n (hold released)
-check(L.available("alice"), 7500n); // result ==> 7500n
+L.balance("alice"); // result ==> 7500n
+L.balance("alice", "pending"); // result ==> 0n  (hold released)
+L.available("alice"); // result ==> 7500n
 
 //--------------------------------------------------------------------
 // reverse() - // Used to undo a transaction by adding the opposite one, never by editing it.
 
 L.reverse("ref-1", "set-1"); // refund = reversal
 
-check(L.balance("alice"), 10000n); // result ==> 10000n
-L.assertInvariants(); // result ==> every phase still sums to 0
+L.balance("alice"); // result ==> 10000n
+L.assertInvariants(); // note: throws if any phase does not sum to 0
 
 // =====================================================================================
 // §3 CARD PAYMENT LIFECYCLE (state machine)
@@ -244,9 +241,9 @@ function transition(payment, to, now = Date.now()) {
 const DAY = 86_400_000;
 const p0 = { status: "authorised", authExpiresAt: 7 * DAY };
 
-check(transition(p0, "captured", 1 * DAY).status, "captured"); // result ==> "captured"
-assert.throws(() => transition(p0, "captured", 8 * DAY), /expired → captured/); // result ==> throws: the hold expired
-assert.throws(() => transition({ status: "captured" }, "refunded"), /illegal/); // result ==> throws: refund only after settle
+transition(p0, "captured", 1 * DAY).status; // result ==> "captured"
+assert.throws(() => transition(p0, "captured", 8 * DAY), /expired → captured/); // note: throws — the hold expired
+assert.throws(() => transition({ status: "captured" }, "refunded"), /illegal/); // note: throws — refund only after settle
 // note: a late capture is an illegal move in the table, not a stray if.
 
 // =====================================================================================
@@ -289,16 +286,16 @@ async function idempotencyDemo() {
 
   // Two requests at the same time with the same key (double click / client retry).
   const [a, b] = await Promise.all([store.run("k1", body, charge), store.run("k1", body, charge)]);
-  check([a.status, b.status].sort(), [201, 409]); // result ==> [201, 409]
-  check(charges, 1); // result ==> 1 (charged once)
+  [a.status, b.status].sort(); // result ==> [201, 409]
+  charges; // result ==> 1  (charged once)
 
   // A retry after it finished gets the saved answer back.
   const replay = await store.run("k1", body, charge);
-  check(replay, a.status === 201 ? a : b); // result ==> the same 201 response
-  check(charges, 1); // result ==> 1
+  replay; // result ==> { status: 201, body: { chargeId: "ch_1" } }  (the same saved response)
+  charges; // result ==> 1
 
   // Same key with a different body is refused.
-  check((await store.run("k1", { amount: 9999, currency: "EUR" }, charge)).status, 422); // result ==> 422
+  (await store.run("k1", { amount: 9999, currency: "EUR" }, charge)).status; // result ==> 422
 }
 
 // =====================================================================================
@@ -314,18 +311,18 @@ function isRetryable(err) {
   return false; // 4xx, issuer decline (card_declined), fraud → never retry
 }
 
-check(isRetryable({ status: 503 }), true); // result ==> true
-check(isRetryable({ status: 402, code: "card_declined" }), false); // result ==> false
-check(isRetryable({ status: 400 }), false); // result ==> false
+isRetryable({ status: 503 }); // result ==> true
+isRetryable({ status: 402, code: "card_declined" }); // result ==> false
+isRetryable({ status: 400 }); // result ==> false
 
 //--------------------------------------------------------------------
 // backoff() - // Used to wait a random time that grows on each try, so clients don't all retry at once ("full jitter").
 
 const backoff = (attempt, rand, base = 100, cap = 5000) => Math.floor(rand() * Math.min(cap, base * 2 ** attempt));
 
-check(backoff(0, () => 0.999), 99); // result ==> 99
-check(backoff(3, () => 0.5), 400); // result ==> 400
-check(backoff(20, () => 0.999), 4995); // result ==> 4995 (never above the cap)
+backoff(0, () => 0.999); // result ==> 99
+backoff(3, () => 0.5); // result ==> 400
+backoff(20, () => 0.999); // result ==> 4995  (never above the cap)
 // note: the wait is random(0, min(cap, base·2^n)).
 
 //--------------------------------------------------------------------
@@ -345,17 +342,17 @@ async function withRetry(fn, { maxAttempts = 4, sleep = async () => {}, rand = M
 //--------------------------------------------------------------------
 // nested retries - // Used to show why you retry in one layer only: 3 tries in 5 layers hit the DB 3^5 times.
 
-check(3 ** 5, 243); // result ==> 243
+3 ** 5; // result ==> 243
 
 async function retryDemo() {
   let calls = 0;
   const flaky = async () => { calls++; if (calls < 3) throw { status: 503 }; return "ok"; };
-  check(await withRetry(flaky), "ok"); // result ==> "ok"
-  check(calls, 3); // result ==> 3 (failed twice, then worked)
+  await withRetry(flaky); // result ==> "ok"
+  calls; // result ==> 3  (failed twice, then worked)
 
   let declines = 0;
-  await assert.rejects(withRetry(async () => { declines++; throw { status: 402, code: "card_declined" }; }));
-  check(declines, 1); // result ==> 1 (a decline is not retried)
+  await assert.rejects(withRetry(async () => { declines++; throw { status: 402, code: "card_declined" }; })); // note: rejects — the decline is thrown straight back
+  declines; // result ==> 1  (a decline is not retried)
 
   //--------------------------------------------------------------------
   // unknown outcome - // Used to handle a timeout where the PSP did charge but the answer got lost.
@@ -371,8 +368,8 @@ async function retryDemo() {
   // Before retrying, ask "did this already happen?" and reuse the SAME key.
   const key = "order-42";
   const result = await withRetry(async (attempt) => (attempt > 0 && (await psp.find(key))) || psp.charge(key, 1000));
-  check(result.id, "ch_1"); // result ==> "ch_1"
-  check(psp.charges.size, 1); // result ==> 1 (charged once)
+  result.id; // result ==> "ch_1"
+  psp.charges.size; // result ==> 1  (charged once)
   // note: a timeout is not a failure. It means "don't know yet".
 }
 
@@ -393,7 +390,7 @@ async function lostUpdateDemo() {
     acc.balance = read - amt;
   };
   await Promise.all([naiveWithdraw(3000n), naiveWithdraw(3000n)]);
-  check(acc.balance, 2000n); // result ==> 2000n — BUG: €60 went out, only €30 was debited
+  acc.balance; // result ==> 2000n  (BUG: €60 went out, only €30 was debited)
 
   //--------------------------------------------------------------------
   // optimistic lock - // Used to write only if nobody changed the row since I read it (UPDATE ... WHERE version = $read).
@@ -413,9 +410,9 @@ async function lostUpdateDemo() {
     }
   };
   const results = await Promise.all([safeWithdraw(3000n), safeWithdraw(3000n)]);
-  check(results.sort(), ["declined", "ok"]); // result ==> ["declined", "ok"]
-  check(row.balance, 2000n); // result ==> 2000n (50 − 30; the second was declined)
-  check(row.version, 1); // result ==> 1
+  results.sort(); // result ==> ["declined", "ok"]
+  row.balance; // result ==> 2000n  (50 − 30; the second was declined)
+  row.version; // result ==> 1
   // note: if the version changed, re-read and try again.
 }
 

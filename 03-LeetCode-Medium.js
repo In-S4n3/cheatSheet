@@ -1,14 +1,8 @@
 // LEETCODE PATTERNS (MEDIUM level) — JavaScript
-// Run with: node 03-LeetCode-Medium.js → if it prints "✅ Medium OK", every example below is right.
+// Run with: node 03-LeetCode-Medium.js → it prints "✅ Medium OK".
+// Check every "// result ==>": node check-results.js 03-LeetCode-Medium.js
 // Before this one: 02-LeetCode-Easy.js (Map, Set, sort with (a, b) => a - b).
-
-const assert = require("node:assert/strict");
-
-const check = (actual, expected) => assert.deepEqual(actual, expected); // stops the file if an example is wrong
-
-// LeetCode often accepts answers "in any order". sameSet sorts both sides before comparing.
-const sortAll = (list) => list.map((x) => (Array.isArray(x) ? [...x].sort((a, b) => a - b) : x)).sort((a, b) => String(a).localeCompare(String(b)));
-const sameSet = (a, b) => assert.deepEqual(sortAll(a), sortAll(b));
+// "// uses:" lists the basic JS pieces a solution needs and where 01-JS-Fundamentals.js (01) or 02-LeetCode-Easy.js (02) explains them.
 
 /*
   INDEX (Ctrl+F "§N ──")
@@ -46,10 +40,11 @@ const sameSet = (a, b) => assert.deepEqual(sortAll(a), sortAll(b));
 //--------------------------------------------------------------------
 // Numbers in JS - // Used to remember that decimals are not exact. Trick: compare decimals with a tiny tolerance, never with ===.
 
-check(0.1 + 0.2 === 0.3, false); // result ==> false  (floats lie)
-check(Math.abs(0.1 + 0.2 - 0.3) < Number.EPSILON, true); // result ==> true
-check(Number.MAX_SAFE_INTEGER, 2 ** 53 - 1); // result ==> 9007199254740991
-check("Ab".toLowerCase() === "ab", true); // result ==> true
+0.1 + 0.2 === 0.3; // result ==> false  (floats lie)
+Math.abs(0.1 + 0.2 - 0.3) < Number.EPSILON; // result ==> true
+Number.MAX_SAFE_INTEGER; // result ==> 9007199254740991
+"Ab".toLowerCase() === "ab"; // result ==> true
+// uses: Math.abs / Number.EPSILON / MAX_SAFE_INTEGER → 01 §8 · toLowerCase → 01 §7
 // note: integers are safe up to 2^53. Divisions → Math.floor / Math.trunc.
 
 // =====================================================================================
@@ -71,11 +66,12 @@ function subarraySum(nums, k) {
   return total;
 }
 
-check(subarraySum([1, 1, 1], 2), 2); // result ==> 2  ([1,1] twice)
-check(subarraySum([1, 2, 3], 3), 2); // result ==> 2  ([1,2] and [3])
-check(subarraySum([1, -1, 0], 0), 3); // result ==> 3  (negatives and zero)
-check(subarraySum([], 0), 0); // result ==> 0
-check(subarraySum([5], 5), 1); // result ==> 1
+subarraySum([1, 1, 1], 2); // result ==> 2  ([1,1] twice)
+subarraySum([1, 2, 3], 3); // result ==> 2  ([1,2] and [3])
+subarraySum([1, -1, 0], 0); // result ==> 3  (negatives and zero)
+subarraySum([], 0); // result ==> 0
+subarraySum([5], 5); // result ==> 1
+// uses: Map get/set → 01 §14 · ?? → 01 §3 · for...of → 01 §6 · pattern: prefix sum → 02 §5
 // note: a sliding window doesn't work here because numbers can be negative.
 // note: O(n) time, O(n) space
 
@@ -92,12 +88,11 @@ function groupAnagrams(strs) {
   return [...groups.values()];
 }
 
-sameSet(
-  groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]).map((g) => g.sort()),
-  [["ate", "eat", "tea"], ["nat", "tan"], ["bat"]]
-); // result ==> [["ate","eat","tea"], ["nat","tan"], ["bat"]]
-check(groupAnagrams([""]), [[""]]); // result ==> [[""]]
-check(groupAnagrams([]), []); // result ==> []
+groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]).map((g) => g.toSorted()).toSorted(); // result ==> [["ate", "eat", "tea"], ["bat"], ["nat", "tan"]]
+groupAnagrams([""]); // result ==> [[""]]
+groupAnagrams([]); // result ==> []
+// uses: [...s] → 01 §13 · sort() without a function → 01 §11 · join → 01 §7 · Map has/get/set/values → 01 §14 · pattern: hash map → 02 §2
+// note: LeetCode accepts these answers in any order, so the examples sort them first with toSorted() (a sorted COPY). On arrays of arrays it compares them as text: ["bat"] → "bat".
 // note: O(n · L log L) time, L = word length
 
 //--------------------------------------------------------------------
@@ -115,11 +110,12 @@ function longestConsecutive(nums) {
   return best;
 }
 
-check(longestConsecutive([100, 4, 200, 1, 3, 2]), 4); // result ==> 4  (1,2,3,4)
-check(longestConsecutive([0, 3, 7, 2, 5, 8, 4, 6, 0, 1]), 9); // result ==> 9
-check(longestConsecutive([]), 0); // result ==> 0
-check(longestConsecutive([1, 2, 0, 1]), 3); // result ==> 3  (duplicates)
-check(longestConsecutive([-1, -2, 5]), 2); // result ==> 2  (negatives)
+longestConsecutive([100, 4, 200, 1, 3, 2]); // result ==> 4  (1,2,3,4)
+longestConsecutive([0, 3, 7, 2, 5, 8, 4, 6, 0, 1]); // result ==> 9
+longestConsecutive([]); // result ==> 0
+longestConsecutive([1, 2, 0, 1]); // result ==> 3  (duplicates)
+longestConsecutive([-1, -2, 5]); // result ==> 2  (negatives)
+// uses: Set has → 01 §14 · continue / while → 01 §6 · Math.max → 01 §8
 // note: O(n) time, O(n) space. Sorting first (O(n log n)) is also accepted.
 
 //--------------------------------------------------------------------
@@ -139,9 +135,10 @@ function topKFrequent(nums, k) {
   return result;
 }
 
-sameSet(topKFrequent([1, 1, 1, 2, 2, 3], 2), [1, 2]); // result ==> [1, 2]
-check(topKFrequent([1], 1), [1]); // result ==> [1]
-sameSet(topKFrequent([-1, -1, 4, 4, 4, 7], 2), [4, -1]); // result ==> [4, -1]
+topKFrequent([1, 1, 1, 2, 2, 3], 2).toSorted((a, b) => a - b); // result ==> [1, 2]
+topKFrequent([1], 1); // result ==> [1]
+topKFrequent([-1, -1, 4, 4, 4, 7], 2).toSorted((a, b) => a - b); // result ==> [-1, 4]
+// uses: counting with a Map → 01 §14 · Array.from({ length }) → 01 §9 · for...of with [num, f] → 01 §6, §13 · toSorted → 01 §10
 // note: O(n) time. Also fine in an interview: [...freq].sort((a, b) => b[1] - a[1]).slice(0, k) → O(n log n)
 
 // =====================================================================================
@@ -182,10 +179,12 @@ function threeSum(nums) {
   return res;
 }
 
-sameSet(threeSum([-1, 0, 1, 2, -1, -4]), [[-1, -1, 2], [-1, 0, 1]]); // result ==> [[-1,-1,2], [-1,0,1]]
-check(threeSum([0, 0, 0, 0]), [[0, 0, 0]]); // result ==> [[0,0,0]]  (duplicates → one triplet)
-check(threeSum([0, 1, 1]), []); // result ==> []
-check(threeSum([]), []); // result ==> []
+threeSum([-1, 0, 1, 2, -1, -4]); // result ==> [[-1, -1, 2], [-1, 0, 1]]
+threeSum([0, 0, 0, 0]); // result ==> [[0,0,0]]  (duplicates → one triplet)
+threeSum([0, 1, 1]); // result ==> []
+threeSum([]); // result ==> []
+// uses: [...nums].sort((a, b) => a - b) → 01 §11, §13 · continue / while → 01 §6 · pattern: two pointers → 02 §3
+// note: any order is accepted; this version sorts first, so its answer always comes out in the same order.
 // note: O(n²) time, O(1) extra space
 
 //--------------------------------------------------------------------
@@ -202,9 +201,10 @@ function maxArea(height) {
   return best;
 }
 
-check(maxArea([1, 8, 6, 2, 5, 4, 8, 3, 7]), 49); // result ==> 49
-check(maxArea([1, 1]), 1); // result ==> 1
-check(maxArea([5]), 0); // result ==> 0
+maxArea([1, 8, 6, 2, 5, 4, 8, 3, 7]); // result ==> 49
+maxArea([1, 1]); // result ==> 1
+maxArea([5]); // result ==> 0
+// uses: Math.min / Math.max → 01 §8 · while → 01 §6 · pattern: two pointers → 02 §3
 // note: moving the taller wall never helps: the width shrinks and the shorter wall still caps the height.
 // note: O(n) time, O(1) space
 
@@ -241,12 +241,13 @@ function lengthOfLongestSubstring(s) {
   return best;
 }
 
-check(lengthOfLongestSubstring("abcabcbb"), 3); // result ==> 3  ("abc")
-check(lengthOfLongestSubstring("bbbbb"), 1); // result ==> 1
-check(lengthOfLongestSubstring("pwwkew"), 3); // result ==> 3  ("wke")
-check(lengthOfLongestSubstring(""), 0); // result ==> 0
-check(lengthOfLongestSubstring(" "), 1); // result ==> 1  (a space is a character too)
-check(lengthOfLongestSubstring("aA"), 2); // result ==> 2  (uppercase ≠ lowercase)
+lengthOfLongestSubstring("abcabcbb"); // result ==> 3  ("abc")
+lengthOfLongestSubstring("bbbbb"); // result ==> 1
+lengthOfLongestSubstring("pwwkew"); // result ==> 3  ("wke")
+lengthOfLongestSubstring(""); // result ==> 0
+lengthOfLongestSubstring(" "); // result ==> 1  (a space is a character too)
+lengthOfLongestSubstring("aA"); // result ==> 2  (uppercase ≠ lowercase)
+// uses: Map get/set → 01 §14 · ?? → 01 §3 · s[i] → 01 §7 · Math.max → 01 §8 · pattern: sliding window → 02 §4
 // note: O(n) time, O(alphabet) space
 
 //--------------------------------------------------------------------
@@ -268,10 +269,11 @@ function characterReplacement(s, k) {
   return best;
 }
 
-check(characterReplacement("ABAB", 2), 4); // result ==> 4
-check(characterReplacement("AABABBA", 1), 4); // result ==> 4
-check(characterReplacement("A", 0), 1); // result ==> 1
-check(characterReplacement("", 2), 0); // result ==> 0
+characterReplacement("ABAB", 2); // result ==> 4
+characterReplacement("AABABBA", 1); // result ==> 4
+characterReplacement("A", 0); // result ==> 1
+characterReplacement("", 2); // result ==> 0
+// uses: Map get/set → 01 §14 · ?? → 01 §3 · Math.max → 01 §8 · pattern: sliding window → 02 §4
 // note: O(n) time, O(26) space
 
 //--------------------------------------------------------------------
@@ -291,10 +293,11 @@ function findAnagrams(s, p) {
   return res;
 }
 
-check(findAnagrams("cbaebabacd", "abc"), [0, 6]); // result ==> [0, 6]  ("cba" and "bac")
-check(findAnagrams("abab", "ab"), [0, 1, 2]); // result ==> [0, 1, 2]
-check(findAnagrams("a", "ab"), []); // result ==> []
-check(findAnagrams("", "a"), []); // result ==> []
+findAnagrams("cbaebabacd", "abc"); // result ==> [0, 6]  ("cba" and "bac")
+findAnagrams("abab", "ab"); // result ==> [0, 1, 2]
+findAnagrams("a", "ab"); // result ==> []
+findAnagrams("", "a"); // result ==> []
+// uses: charCodeAt → 01 §7 · new Array(26).fill(0) → 01 §9 · join to compare two arrays → 01 §7 · pattern: fixed window → 02 §4
 // note: O(26 · n) = O(n) time, O(1) space
 
 // =====================================================================================
@@ -330,9 +333,10 @@ function dailyTemperatures(temps) {
   return res;
 }
 
-check(dailyTemperatures([73, 74, 75, 71, 69, 72, 76, 73]), [1, 1, 4, 2, 1, 1, 0, 0]); // result ==> [1,1,4,2,1,1,0,0]
-check(dailyTemperatures([30, 30, 30]), [0, 0, 0]); // result ==> [0,0,0]  (equal is not "warmer")
-check(dailyTemperatures([]), []); // result ==> []
+dailyTemperatures([73, 74, 75, 71, 69, 72, 76, 73]); // result ==> [1,1,4,2,1,1,0,0]
+dailyTemperatures([30, 30, 30]); // result ==> [0,0,0]  (equal is not "warmer")
+dailyTemperatures([]); // result ==> []
+// uses: new Array(n).fill(0) / push / pop → 01 §9 · at(-1) → 01 §10 · pattern: stack → 02 §7
 // note: O(n) time, O(n) space
 
 //--------------------------------------------------------------------
@@ -355,10 +359,11 @@ function evalRPN(tokens) {
   return stack[0];
 }
 
-check(evalRPN(["2", "1", "+", "3", "*"]), 9); // result ==> 9
-check(evalRPN(["4", "13", "5", "/", "+"]), 6); // result ==> 6
-check(evalRPN(["10", "6", "9", "3", "+", "-11", "*", "/", "*", "17", "+", "5", "+"]), 22); // result ==> 22
-check(evalRPN(["-7", "2", "/"]), -3); // result ==> -3  (trunc, floor would give -4)
+evalRPN(["2", "1", "+", "3", "*"]); // result ==> 9
+evalRPN(["4", "13", "5", "/", "+"]); // result ==> 6
+evalRPN(["10", "6", "9", "3", "+", "-11", "*", "/", "*", "17", "+", "5", "+"]); // result ==> 22
+evalRPN(["-7", "2", "/"]); // result ==> -3  (trunc, floor would give -4)
+// uses: object lookup → 01 §5 · arrow functions → 01 §16 · "key" in obj → 01 §12 · Math.trunc / Number(text) → 01 §8 · pattern: stack → 02 §7
 // note: O(n) time, O(n) space
 
 //--------------------------------------------------------------------
@@ -387,10 +392,11 @@ class MinStack {
 
 const ms = new MinStack();
 ms.push(-2); ms.push(0); ms.push(-3);
-check(ms.getMin(), -3); // result ==> -3
+ms.getMin(); // result ==> -3
 ms.pop();
-check(ms.top(), 0); // result ==> 0
-check(ms.getMin(), -2); // result ==> -2
+ms.top(); // result ==> 0
+ms.getMin(); // result ==> -2
+// uses: class + constructor → 01 §19 · at(-1) → 01 §10 · ?? → 01 §3 · Infinity → 01 §8
 // note: every operation O(1)
 
 // =====================================================================================
@@ -431,13 +437,14 @@ function searchRotated(nums, target) {
   return -1;
 }
 
-check(searchRotated([4, 5, 6, 7, 0, 1, 2], 0), 4); // result ==> 4
-check(searchRotated([4, 5, 6, 7, 0, 1, 2], 3), -1); // result ==> -1
-check(searchRotated([1], 0), -1); // result ==> -1
-check(searchRotated([1], 1), 0); // result ==> 0
-check(searchRotated([3, 1], 1), 1); // result ==> 1
-check(searchRotated([1, 2, 3], 3), 2); // result ==> 2  (not rotated)
-check(searchRotated([], 5), -1); // result ==> -1
+searchRotated([4, 5, 6, 7, 0, 1, 2], 0); // result ==> 4
+searchRotated([4, 5, 6, 7, 0, 1, 2], 3); // result ==> -1
+searchRotated([1], 0); // result ==> -1
+searchRotated([1], 1); // result ==> 0
+searchRotated([3, 1], 1); // result ==> 1
+searchRotated([1, 2, 3], 3); // result ==> 2  (not rotated)
+searchRotated([], 5); // result ==> -1
+// uses: Math.floor → 01 §8 · while → 01 §6 · pattern: binary search → 02 §6
 // note: O(log n) time, O(1) space
 
 //--------------------------------------------------------------------
@@ -454,10 +461,11 @@ function minEatingSpeed(piles, h) {
   return lo;
 }
 
-check(minEatingSpeed([3, 6, 7, 11], 8), 4); // result ==> 4
-check(minEatingSpeed([30, 11, 23, 4, 20], 5), 30); // result ==> 30  (h = number of piles → biggest pile)
-check(minEatingSpeed([30, 11, 23, 4, 20], 6), 23); // result ==> 23
-check(minEatingSpeed([1], 1), 1); // result ==> 1
+minEatingSpeed([3, 6, 7, 11], 8); // result ==> 4
+minEatingSpeed([30, 11, 23, 4, 20], 5); // result ==> 30  (h = number of piles → biggest pile)
+minEatingSpeed([30, 11, 23, 4, 20], 6); // result ==> 23
+minEatingSpeed([1], 1); // result ==> 1
+// uses: reduce → 01 §10 · Math.ceil / Math.max → 01 §8 · ...piles → 01 §13 · pattern: binary search → 02 §6
 // note: O(n · log(maxPile)) time, O(1) space
 // note: Math.max(...arr) blows up on huge arrays (>~100k). Use a for loop or reduce there.
 
@@ -487,11 +495,12 @@ function merge(intervals) {
   return res;
 }
 
-check(merge([[1, 3], [2, 6], [8, 10], [15, 18]]), [[1, 6], [8, 10], [15, 18]]); // result ==> [[1,6], [8,10], [15,18]]
-check(merge([[1, 4], [4, 5]]), [[1, 5]]); // result ==> [[1,5]]  (touching counts)
-check(merge([[1, 4], [2, 3]]), [[1, 4]]); // result ==> [[1,4]]  (one inside the other → Math.max matters)
-check(merge([[4, 7], [1, 4]]), [[1, 7]]); // result ==> [[1,7]]  (unsorted input)
-check(merge([]), []); // result ==> []
+merge([[1, 3], [2, 6], [8, 10], [15, 18]]); // result ==> [[1,6], [8,10], [15,18]]
+merge([[1, 4], [4, 5]]); // result ==> [[1,5]]  (touching counts)
+merge([[1, 4], [2, 3]]); // result ==> [[1,4]]  (one inside the other → Math.max matters)
+merge([[4, 7], [1, 4]]); // result ==> [[1,7]]  (unsorted input)
+merge([]); // result ==> []
+// uses: map + [...x] copy → 01 §10, §13 · sort((a, b) => a[0] - b[0]) → 01 §11 · at(-1) → 01 §10
 // note: O(n log n) time because of the sort, O(n) space
 
 //--------------------------------------------------------------------
@@ -512,11 +521,12 @@ function insert(intervals, newInterval) {
   return res;
 }
 
-check(insert([[1, 3], [6, 9]], [2, 5]), [[1, 5], [6, 9]]); // result ==> [[1,5], [6,9]]
-check(insert([[1, 2], [3, 5], [6, 7], [8, 10], [12, 16]], [4, 8]), [[1, 2], [3, 10], [12, 16]]); // result ==> [[1,2], [3,10], [12,16]]
-check(insert([], [5, 7]), [[5, 7]]); // result ==> [[5,7]]
-check(insert([[1, 5]], [6, 8]), [[1, 5], [6, 8]]); // result ==> [[1,5], [6,8]]  (goes at the end)
-check(insert([[3, 5]], [1, 2]), [[1, 2], [3, 5]]); // result ==> [[1,2], [3,5]]  (goes at the start)
+insert([[1, 3], [6, 9]], [2, 5]); // result ==> [[1,5], [6,9]]
+insert([[1, 2], [3, 5], [6, 7], [8, 10], [12, 16]], [4, 8]); // result ==> [[1,2], [3,10], [12,16]]
+insert([], [5, 7]); // result ==> [[5,7]]
+insert([[1, 5]], [6, 8]); // result ==> [[1,5], [6,8]]  (goes at the end)
+insert([[3, 5]], [1, 2]); // result ==> [[1,2], [3,5]]  (goes at the start)
+// uses: let [start, end] = … → 01 §13 · intervals[i++] → 01 §3 · while → 01 §6 · Math.min / Math.max → 01 §8
 // note: O(n) time, O(n) space
 
 // =====================================================================================
@@ -563,11 +573,12 @@ const islandGrid = [
   ["0", "0", "1", "0", "0"],
   ["0", "0", "0", "1", "1"],
 ];
-check(numIslands(islandGrid), 3); // result ==> 3
-check(islandGrid[0][0], "1"); // result ==> "1"  (the input was not changed)
-check(numIslands([["0"]]), 0); // result ==> 0
-check(numIslands([["1"]]), 1); // result ==> 1
-check(numIslands([]), 0); // result ==> 0
+numIslands(islandGrid); // result ==> 3
+islandGrid[0][0]; // result ==> "1"  (the input was not changed)
+numIslands([["0"]]); // result ==> 0
+numIslands([["1"]]); // result ==> 1
+numIslands([]); // result ==> 0
+// uses: map + [...row] copy → 01 §10, §13 · ?. and ?? → 01 §3 · recursion → 01 §16 · loop in a matrix → 01 §6
 // note: O(rows · cols) time and space (recursion in the worst case)
 
 //--------------------------------------------------------------------
@@ -601,10 +612,11 @@ function orangesRotting(grid) {
   return fresh === 0 ? minutes : -1; // an unreachable fresh one is left → impossible
 }
 
-check(orangesRotting([[2, 1, 1], [1, 1, 0], [0, 1, 1]]), 4); // result ==> 4
-check(orangesRotting([[2, 1, 1], [0, 1, 1], [1, 0, 1]]), -1); // result ==> -1
-check(orangesRotting([[0, 2]]), 0); // result ==> 0  (no fresh ones)
-check(orangesRotting([[1]]), -1); // result ==> -1  (fresh but nothing rotten)
+orangesRotting([[2, 1, 1], [1, 1, 0], [0, 1, 1]]); // result ==> 4
+orangesRotting([[2, 1, 1], [0, 1, 1], [1, 0, 1]]); // result ==> -1
+orangesRotting([[0, 2]]); // result ==> 0  (no fresh ones)
+orangesRotting([[1]]); // result ==> -1  (fresh but nothing rotten)
+// uses: loop in a matrix → 01 §6 · for...of with [r, c] → 01 §13 · continue → 01 §6 · ternary → 01 §3
 // note: O(rows · cols) time and space
 
 // =====================================================================================
@@ -621,7 +633,8 @@ function buildGraph(n, edges) {
   return graph;
 }
 
-check(buildGraph(3, [[0, 1], [0, 2]]), [[1, 2], [], []]); // result ==> [[1,2], [], []]
+buildGraph(3, [[0, 1], [0, 2]]); // result ==> [[1,2], [], []]
+// uses: Array.from({ length }, () => []) → 01 §9 · for...of with [a, b] → 01 §6, §13
 
 //--------------------------------------------------------------------
 // Course Schedule (LC 207) - // Used to know if you can take every course given the prerequisites. Trick: Kahn: start with courses that need nothing; if you take them all, there is no cycle.
@@ -647,11 +660,12 @@ function canFinish(numCourses, prerequisites) {
   return done === numCourses; // the final `queue` is a valid order (LC 210 Course Schedule II)
 }
 
-check(canFinish(2, [[1, 0]]), true); // result ==> true
-check(canFinish(2, [[1, 0], [0, 1]]), false); // result ==> false  (cycle)
-check(canFinish(1, []), true); // result ==> true
-check(canFinish(4, [[1, 0], [2, 1], [3, 2], [1, 3]]), false); // result ==> false  (cycle 1→2→3→1)
-check(canFinish(3, [[1, 0], [2, 0]]), true); // result ==> true
+canFinish(2, [[1, 0]]); // result ==> true
+canFinish(2, [[1, 0], [0, 1]]); // result ==> false  (cycle)
+canFinish(1, []); // result ==> true
+canFinish(4, [[1, 0], [2, 1], [3, 2], [1, 3]]); // result ==> false  (cycle 1→2→3→1)
+canFinish(3, [[1, 0], [2, 0]]); // result ==> true
+// uses: Array.from / fill(0) → 01 §9 · for → 01 §6 · ++ / -- → 01 §3 · pattern: queue read with an index instead of shift() → 01 §9
 // note: inDegree[x] = how many prerequisites x still needs.
 // note: O(V + E) time and space (nodes + edges)
 
@@ -690,9 +704,11 @@ function subsets(nums) {
   return res;
 }
 
-sameSet(subsets([1, 2, 3]), [[], [1], [2], [3], [1, 2], [1, 3], [2, 3], [1, 2, 3]]); // result ==> 8 subsets
-check(subsets([]), [[]]); // result ==> [[]]
-check(subsets([1, 2, 3, 4]).length, 16); // result ==> 16  (2^4)
+subsets([1, 2, 3]).map((s) => s.join()).toSorted(); // result ==> ["", "1", "1,2", "1,2,3", "1,3", "2", "2,3", "3"]  (8 subsets)
+subsets([]); // result ==> [[]]
+subsets([1, 2, 3, 4]).length; // result ==> 16  (2^4)
+// uses: function inside a function → 01 §17 · recursion → 01 §16 · push / pop → 01 §9 · [...current] copy → 01 §13 · join / toSorted → 01 §7, §10
+// note: any order is accepted, so the examples turn each answer into text with join() and sort the list with toSorted(): same answers → same result.
 // note: O(n · 2^n) time, O(n) recursion
 
 //--------------------------------------------------------------------
@@ -718,11 +734,9 @@ function permute(nums) {
   return res;
 }
 
-check(
-  permute([1, 2, 3]).map(String).sort(), // sorts the list, but NOT inside each permutation
-  ["1,2,3", "1,3,2", "2,1,3", "2,3,1", "3,1,2", "3,2,1"]
-); // result ==> 6 permutations
-check(permute([1]), [[1]]); // result ==> [[1]]
+permute([1, 2, 3]).map((p) => p.join()).toSorted(); // result ==> ["1,2,3", "1,3,2", "2,1,3", "2,3,1", "3,1,2", "3,2,1"]  (6 permutations)
+permute([1]); // result ==> [[1]]
+// uses: recursion → 01 §16 · fill(false) / push / pop → 01 §9 · continue → 01 §6 · [...current] copy → 01 §13
 // note: O(n · n!) time, O(n) space
 
 //--------------------------------------------------------------------
@@ -746,9 +760,10 @@ function combinationSum(candidates, target) {
   return res;
 }
 
-sameSet(combinationSum([2, 3, 6, 7], 7), [[2, 2, 3], [7]]); // result ==> [[2,2,3], [7]]
-sameSet(combinationSum([2, 3, 5], 8), [[2, 2, 2, 2], [2, 3, 3], [3, 5]]); // result ==> [[2,2,2,2], [2,3,3], [3,5]]
-check(combinationSum([2], 1), []); // result ==> []
+combinationSum([2, 3, 6, 7], 7).map((c) => c.join()).toSorted(); // result ==> ["2,2,3", "7"]
+combinationSum([2, 3, 5], 8).map((c) => c.join()).toSorted(); // result ==> ["2,2,2,2", "2,3,3", "3,5"]
+combinationSum([2], 1); // result ==> []
+// uses: recursion → 01 §16 · push / pop → 01 §9 · [...current] copy → 01 §13
 // note: exponential time ~O(2^target), O(target) recursion
 
 // =====================================================================================
@@ -803,11 +818,12 @@ class MinHeap {
 
 const testHeap = new MinHeap();
 for (const x of [5, 3, 8, 1, 9, 1, -2]) testHeap.push(x);
-check(testHeap.peek(), -2); // result ==> -2
+testHeap.peek(); // result ==> -2
 const out = [];
 while (testHeap.size) out.push(testHeap.pop());
-check(out, [-2, 1, 1, 3, 5, 8, 9]); // result ==> [-2,1,1,3,5,8,9]  (always comes out sorted)
-check(new MinHeap().pop(), undefined); // result ==> undefined
+out; // result ==> [-2,1,1,3,5,8,9]  (always comes out sorted)
+new MinHeap().pop(); // result ==> undefined
+// uses: class + get → 01 §19 · swap with [a, b] = [b, a] → 01 §13 · Math.floor → 01 §8 · while (true) + break → 01 §6
 // note: JS has no native heap. In an interview ask "can I assume a MinHeap?"; if not, this takes ~5 min.
 // note: push/pop O(log n), peek O(1)
 
@@ -825,11 +841,12 @@ function findKthLargest(nums, k) {
 // also fine in an interview (say the complexity!): sort → O(n log n)
 const kthLargestSort = (nums, k) => [...nums].sort((a, b) => b - a)[k - 1];
 
-check(findKthLargest([3, 2, 1, 5, 6, 4], 2), 5); // result ==> 5
-check(findKthLargest([3, 2, 3, 1, 2, 4, 5, 5, 6], 4), 4); // result ==> 4  (duplicates count)
-check(findKthLargest([1], 1), 1); // result ==> 1
-check(findKthLargest([-1, -5, -3], 1), -1); // result ==> -1
-check(kthLargestSort([3, 2, 1, 5, 6, 4], 2), 5); // result ==> 5
+findKthLargest([3, 2, 1, 5, 6, 4], 2); // result ==> 5
+findKthLargest([3, 2, 3, 1, 2, 4, 5, 5, 6], 4); // result ==> 4  (duplicates count)
+findKthLargest([1], 1); // result ==> 1
+findKthLargest([-1, -5, -3], 1); // result ==> -1
+kthLargestSort([3, 2, 1, 5, 6, 4], 2); // result ==> 5
+// uses: the MinHeap class above · for...of → 01 §6 · [...nums].sort((a, b) => b - a) → 01 §11, §13 · arrow → 01 §16
 // note: O(n log k) time, O(k) space
 
 // =====================================================================================
@@ -872,12 +889,13 @@ function rob(nums) {
 }
 
 for (const f of [rob, robMemo]) {
-  check(f([1, 2, 3, 1]), 4); // result ==> 4  (1 + 3)
-  check(f([2, 7, 9, 3, 1]), 12); // result ==> 12  (2 + 9 + 1)
-  check(f([]), 0); // result ==> 0
-  check(f([5]), 5); // result ==> 5
-  check(f([2, 1, 1, 2]), 4); // result ==> 4  (skips 2 houses in a row)
+  f([1, 2, 3, 1]); // result ==> 4  (1 + 3)
+  f([2, 7, 9, 3, 1]); // result ==> 12  (2 + 9 + 1)
+  f([]); // result ==> 0
+  f([5]); // result ==> 5
+  f([2, 1, 1, 2]); // result ==> 4  (skips 2 houses in a row)
 }
+// uses: recursion → 01 §16 · Map as a memo → 01 §14, §17 · Math.max → 01 §8 · for...of → 01 §6
 // note: O(n) time, O(1) space (memo: O(n))
 
 //--------------------------------------------------------------------
@@ -894,10 +912,11 @@ function coinChange(coins, amount) {
   return dp[amount] === Infinity ? -1 : dp[amount];
 }
 
-check(coinChange([1, 2, 5], 11), 3); // result ==> 3  (5+5+1)
-check(coinChange([2], 3), -1); // result ==> -1
-check(coinChange([1], 0), 0); // result ==> 0
-check(coinChange([1, 3, 4], 6), 2); // result ==> 2  (3+3; greedy would give 4+1+1)
+coinChange([1, 2, 5], 11); // result ==> 3  (5+5+1)
+coinChange([2], 3); // result ==> -1
+coinChange([1], 0); // result ==> 0
+coinChange([1, 3, 4], 6); // result ==> 2  (3+3; greedy would give 4+1+1)
+// uses: new Array(n).fill(Infinity) → 01 §9, §8 · nested for → 01 §6 · Math.min → 01 §8 · ternary → 01 §3
 // note: greedy (biggest coin first) FAILS here.
 // note: O(amount · coins) time, O(amount) space
 
@@ -915,10 +934,11 @@ function lengthOfLIS(nums) {
   return Math.max(...dp); // the answer can end at any i
 }
 
-check(lengthOfLIS([10, 9, 2, 5, 3, 7, 101, 18]), 4); // result ==> 4  (2,3,7,101)
-check(lengthOfLIS([0, 1, 0, 3, 2, 3]), 4); // result ==> 4
-check(lengthOfLIS([7, 7, 7, 7]), 1); // result ==> 1  (equal values don't count)
-check(lengthOfLIS([]), 0); // result ==> 0
+lengthOfLIS([10, 9, 2, 5, 3, 7, 101, 18]); // result ==> 4  (2,3,7,101)
+lengthOfLIS([0, 1, 0, 3, 2, 3]); // result ==> 4
+lengthOfLIS([7, 7, 7, 7]); // result ==> 1  (equal values don't count)
+lengthOfLIS([]); // result ==> 0
+// uses: fill(1) → 01 §9 · nested for → 01 §6 · Math.max(...dp) → 01 §8, §13
 // note: O(n²) time, O(n) space. An O(n log n) version exists; O(n²) is accepted.
 
 //--------------------------------------------------------------------
@@ -935,10 +955,11 @@ function longestCommonSubsequence(a, b) {
   return dp[a.length][b.length];
 }
 
-check(longestCommonSubsequence("abcde", "ace"), 3); // result ==> 3  ("ace")
-check(longestCommonSubsequence("abc", "abc"), 3); // result ==> 3
-check(longestCommonSubsequence("abc", "def"), 0); // result ==> 0
-check(longestCommonSubsequence("", "abc"), 0); // result ==> 0
+longestCommonSubsequence("abcde", "ace"); // result ==> 3  ("ace")
+longestCommonSubsequence("abc", "abc"); // result ==> 3
+longestCommonSubsequence("abc", "def"); // result ==> 0
+longestCommonSubsequence("", "abc"); // result ==> 0
+// uses: Array.from to build a matrix → 01 §9 · loop in a matrix → 01 §6 · s[i] → 01 §7 · Math.max → 01 §8
 // note: the extra row/column of zeros = the "empty string" base case.
 // note: O(n · m) time and space
 
@@ -953,9 +974,10 @@ function uniquePaths(m, n) {
   return dp[m - 1][n - 1];
 }
 
-check(uniquePaths(3, 7), 28); // result ==> 28
-check(uniquePaths(3, 2), 3); // result ==> 3
-check(uniquePaths(1, 1), 1); // result ==> 1
+uniquePaths(3, 7); // result ==> 28
+uniquePaths(3, 2); // result ==> 3
+uniquePaths(1, 1); // result ==> 1
+// uses: Array.from + fill(1) → 01 §9 · loop in a matrix → 01 §6
 // note: O(m · n) time and space
 
 // =====================================================================================
@@ -995,10 +1017,11 @@ function removeNthFromEnd(head, n) {
   return dummy.next;
 }
 
-check(toArray(removeNthFromEnd(toList([1, 2, 3, 4, 5]), 2)), [1, 2, 3, 5]); // result ==> [1,2,3,5]
-check(toArray(removeNthFromEnd(toList([1]), 1)), []); // result ==> []
-check(toArray(removeNthFromEnd(toList([1, 2]), 2)), [2]); // result ==> [2]  (removes the head)
-check(toArray(removeNthFromEnd(toList([1, 2]), 1)), [1]); // result ==> [1]
+toArray(removeNthFromEnd(toList([1, 2, 3, 4, 5]), 2)); // result ==> [1,2,3,5]
+toArray(removeNthFromEnd(toList([1]), 1)); // result ==> []
+toArray(removeNthFromEnd(toList([1, 2]), 2)); // result ==> [2]  (removes the head)
+toArray(removeNthFromEnd(toList([1, 2]), 1)); // result ==> [1]
+// uses: class ListNode above → 01 §19 · for / while → 01 §6 · pattern: dummy node + two pointers → 02 §8
 // note: O(n) time, O(1) space
 
 //--------------------------------------------------------------------
@@ -1019,10 +1042,11 @@ function addTwoNumbers(l1, l2) {
   return dummy.next;
 }
 
-check(toArray(addTwoNumbers(toList([2, 4, 3]), toList([5, 6, 4]))), [7, 0, 8]); // result ==> [7,0,8]  (342 + 465 = 807)
-check(toArray(addTwoNumbers(toList([0]), toList([0]))), [0]); // result ==> [0]
-check(toArray(addTwoNumbers(toList([9, 9, 9, 9]), toList([9, 9]))), [8, 9, 0, 0, 1]); // result ==> [8,9,0,0,1]  (different lengths)
-check(toArray(addTwoNumbers(toList([5]), toList([5]))), [0, 1]); // result ==> [0,1]  (carry at the end)
+toArray(addTwoNumbers(toList([2, 4, 3]), toList([5, 6, 4]))); // result ==> [7,0,8]  (342 + 465 = 807)
+toArray(addTwoNumbers(toList([0]), toList([0]))); // result ==> [0]
+toArray(addTwoNumbers(toList([9, 9, 9, 9]), toList([9, 9]))); // result ==> [8,9,0,0,1]  (different lengths)
+toArray(addTwoNumbers(toList([5]), toList([5]))); // result ==> [0,1]  (carry at the end)
+// uses: ?. and ?? → 01 §3 · Math.floor → 01 §8 · % → 01 §3 · while → 01 §6 · pattern: dummy node → 02 §8
 // note: O(max(n, m)) time and space
 
 // =====================================================================================
@@ -1069,12 +1093,13 @@ function isValidBST(node, min = -Infinity, max = Infinity) {
   return isValidBST(node.left, min, node.val) && isValidBST(node.right, node.val, max);
 }
 
-check(isValidBST(toTree([2, 1, 3])), true); // result ==> true
-check(isValidBST(toTree([5, 1, 4, null, null, 3, 6])), false); // result ==> false
-check(isValidBST(toTree([5, 4, 6, null, null, 3, 7])), false); // result ==> false  (the 3 sits right of 5)
-check(isValidBST(toTree([2, 2, 2])), false); // result ==> false  (equal values)
-check(isValidBST(null), true); // result ==> true
-check(isValidBST(toTree([-2147483648])), true); // result ==> true  (that's why -Infinity, not a number)
+isValidBST(toTree([2, 1, 3])); // result ==> true
+isValidBST(toTree([5, 1, 4, null, null, 3, 6])); // result ==> false
+isValidBST(toTree([5, 4, 6, null, null, 3, 7])); // result ==> false  (the 3 sits right of 5)
+isValidBST(toTree([2, 2, 2])); // result ==> false  (equal values)
+isValidBST(null); // result ==> true
+isValidBST(toTree([-2147483648])); // result ==> true  (that's why -Infinity, not a number)
+// uses: default parameters / recursion → 01 §16 · -Infinity / Infinity → 01 §8 · && → 01 §3 · pattern: tree recursion → 02 §9
 // note: checking only the direct children is the classic trap.
 // note: O(n) time, O(height) space
 
@@ -1091,9 +1116,10 @@ function lowestCommonAncestor(node, p, q) {
 
 const lcaRoot = toTree([3, 5, 1, 6, 2, 0, 8, null, null, 7, 4]);
 const findNode = (node, val) => (!node ? null : node.val === val ? node : findNode(node.left, val) ?? findNode(node.right, val));
-check(lowestCommonAncestor(lcaRoot, findNode(lcaRoot, 5), findNode(lcaRoot, 1)).val, 3); // result ==> 3
-check(lowestCommonAncestor(lcaRoot, findNode(lcaRoot, 5), findNode(lcaRoot, 4)).val, 5); // result ==> 5  (one is above the other)
-check(lowestCommonAncestor(lcaRoot, findNode(lcaRoot, 7), findNode(lcaRoot, 8)).val, 3); // result ==> 3
+lowestCommonAncestor(lcaRoot, findNode(lcaRoot, 5), findNode(lcaRoot, 1)).val; // result ==> 3
+lowestCommonAncestor(lcaRoot, findNode(lcaRoot, 5), findNode(lcaRoot, 4)).val; // result ==> 5  (one is above the other)
+lowestCommonAncestor(lcaRoot, findNode(lcaRoot, 7), findNode(lcaRoot, 8)).val; // result ==> 3
+// uses: recursion → 01 §16 · && and ?? → 01 §3 · === → 01 §3 · pattern: tree recursion → 02 §9
 // note: O(n) time, O(height) space
 
 //--------------------------------------------------------------------
@@ -1115,10 +1141,11 @@ function levelOrder(root) {
   return levels;
 }
 
-check(levelOrder(toTree([3, 9, 20, null, null, 15, 7])), [[3], [9, 20], [15, 7]]); // result ==> [[3], [9,20], [15,7]]
-check(levelOrder(toTree([1])), [[1]]); // result ==> [[1]]
-check(levelOrder(null), []); // result ==> []
-check(levelOrder(toTree([1, 2, null, 3])), [[1], [2], [3]]); // result ==> [[1], [2], [3]]  (lopsided tree)
+levelOrder(toTree([3, 9, 20, null, null, 15, 7])); // result ==> [[3], [9,20], [15,7]]
+levelOrder(toTree([1])); // result ==> [[1]]
+levelOrder(null); // result ==> []
+levelOrder(toTree([1, 2, null, 3])); // result ==> [[1], [2], [3]]  (lopsided tree)
+// uses: map → 01 §10 · for...of / while → 01 §6 · pattern: level order (BFS) → 02 §9
 // note: same code solves LC 199 Right Side View (last of each level) and LC 103 Zigzag (reverse odd levels).
 // note: O(n) time, O(n) space
 

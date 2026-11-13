@@ -27,7 +27,10 @@
 ## §1 Money in code
 
 **Minor unit** — Used to store money as a whole number of cents, never as a `float`.
-- Example: €12.34 is stored as `1234`. `toMinor("12.34", "EUR")` → `1234n`.
+- Example: €12.34 is stored as `1234`.
+```js
+toMinor("12.34", "EUR"); // result ==> 1234n
+```
 - note: `0.1 + 0.2 !== 0.3`. One wrong cent × millions of accounts = an audit.
 - note: parse from a string, never from a float. Use `BigInt` / `int64`, or a decimal library (`decimal.js`, Go `shopspring/decimal`).
 
@@ -39,6 +42,10 @@
 | EUR / USD | 2 | 100 |
 | BHD / KWD | 3 | 1000 |
 
+- Example: ¥500 is stored as `500`; 1.234 BHD as `1234`.
+```js
+toMinor("500", "JPY"); // result ==> 500n
+```
 - note: never assume 2 decimal places.
 
 **Amount + currency** — Used to keep the number and its currency together.
@@ -46,15 +53,24 @@
 - note: a number without a currency is not money.
 
 **Banker's rounding (half-even)** — Used to round a tie to the even number.
-- Example: 2.5 → 2, 3.5 → 4. `divHalfEven(25n, 10n)` → `2n`.
+- Example: 2.5 → 2, 3.5 → 4.
+```js
+divHalfEven(25n, 10n); // result ==> 2n
+```
 - note: half-up always pushes ties up, so the error builds up. Half-even removes that bias.
 - note: round once, at the end, with an explicit rule.
 
 **Basis points** — Used to write rates as whole numbers: 150 bp = 1.5%.
-- Example: €1234.56 × 150 bp = €18.5184 → `1852` cents.
+- Example: a 1.5% fee on €1234.56 = €18.5184 → €18.52.
+```js
+divHalfEven(123456n * 150n, 10000n); // result ==> 1852n
+```
 
 **Allocate** — Used to split an amount without losing a cent. The leftover goes to the largest remainder.
-- Example: €10.00 / 3 = 3.34 + 3.33 + 3.33. `allocate(1000n, [1n, 1n, 1n])` → `[334n, 333n, 333n]`.
+- Example: €10.00 / 3 = 3.34 + 3.33 + 3.33.
+```js
+allocate(1000n, [1n, 1n, 1n]); // result ==> [334n, 333n, 333n]
+```
 - In an interview: "Money is an integer in the minor unit, plus the currency. I round once, half-even, and allocate the remainder so the total always adds up."
 
 → `04-Payments.js` §1
@@ -64,33 +80,55 @@
 ## §2 Double-entry ledger
 
 **Ledger** — Used to record every money movement as a list of entries that never changes.
-- Example: entry (posting) = `{ txId, account, amount ±, phase }`.
+- Example: a €100 deposit is stored as two entries (postings):
+  `{ txId: "dep-1", account: "bank:cash", amount: -10000n, phase: "committed" }` and
+  `{ txId: "dep-1", account: "alice", amount: 10000n, phase: "committed" }`.
 - note: append-only. A mistake is never fixed with an `UPDATE`.
 
 **Double entry** — Used to make sure money never appears or disappears: every movement takes from one account and gives to another.
-- Example: a transaction has ≥ 2 entries, and they sum to 0.
-- note: an unbalanced ledger is a proven bug.
+- Example: deposit €100 → `bank:cash −10000` + `alice +10000` = 0.
+```js
+L.transfer("dep-1", "bank:cash", "alice", 10000n); // result: 2 entries that sum to 0
+```
+- note: a transaction has ≥ 2 entries, and they sum to 0. An unbalanced ledger is a proven bug.
 
 **Account** — Used to hold entries for one owner: a customer, a merchant, or a bank internal account (cash, interest, fees).
+- Example: `"alice"` (customer), `"merchant"`, `"bank:cash"` (internal; it may go negative).
 
 **Balance** — Used to know how much an account has. It is the sum of the account's entries.
-- Example: `SUM(amount)` of the account's entries (may have a cached snapshot).
+- Example: `SELECT SUM(amount) FROM entries WHERE account = 'alice'` (may have a cached snapshot).
+```js
+L.balance("alice"); // result ==> 10000n
+```
 - note: never store `balance` as a column you edit. It is **derived** from the entries.
 
 **Debit / credit** — Used to name the two sides of an entry.
+- Example: alice deposits €100 → debit the bank's cash (an asset, +€100), credit alice's account (a liability, +€100).
 - note: in bank accounting, a customer deposit is a **liability** of the bank. Crediting the customer's account raises their balance.
 - note: don't memorise signs; memorise "sums to zero".
 
 **Pending vs settled** — Used to tell held money apart from money that really moved.
-- Example: `L.authorise("auth-1", "alice", "merchant", 3000n)` holds €30 in the pending phase only.
+- Example: a €30 card purchase holds the money in the pending phase only.
+```js
+L.authorise("auth-1", "alice", "merchant", 3000n);
+L.balance("alice"); // result ==> 10000n  (settled is still €100)
+```
 - note: held (authorisation) ≠ settled.
 
 **Available balance** — Used to know what the customer can still spend: settled − outgoing holds.
-- Example: €100 settled, €30 held → `L.available("alice")` = `7000n`.
+- Example: €100 settled, €30 held → €70 left to spend.
+```js
+L.available("alice"); // result ==> 7000n
+```
 - note: incoming pending entries do **not** add to it.
 
 **Reversal** — Used to fix a wrong transaction by adding the opposite one.
-- Example: `L.settle("set-1", "auth-1", 2500n)` posts €25; `L.reverse("ref-1", "set-1")` refunds it.
+- Example: settle €25 of the €30 hold, then refund it with a reversal.
+```js
+L.settle("set-1", "auth-1", 2500n);
+L.reverse("ref-1", "set-1");
+L.balance("alice"); // result ==> 10000n  (back to €100)
+```
 - note: `L.assertInvariants()` checks the global sum per phase = 0.
 - In an interview: "An append-only, double-entry ledger: every transaction sums to zero, the balance is derived, and corrections are reversals."
 
@@ -101,6 +139,7 @@
 ## §3 Card payment lifecycle
 
 **Payment lifecycle** — Used to move a card payment through states; it is not a single call.
+- Example: a €30 order → authorise €30 → capture €25 (one item out of stock) → settle → refund €25.
 - note: each state has different money rules (held vs moved vs returned).
 - note: the trap is capturing after the authorisation expired, or refunding what was never settled.
 
@@ -119,12 +158,13 @@ authorise ──► capture ──► settle ──► refund / partial refund
 | Chargeback | The cardholder disputes with the issuer; the merchant loses the amount + a fee, unless they prove otherwise |
 
 **Authorisation expiry** — Used to know how long a hold lasts before it is released (Stripe, online).
-- Example: Visa 5 days for MIT (exactly 4 d 18 h), 7 for CIT; Mastercard 7.
+- Example: Visa 5 days for MIT (exactly 4 d 18 h), 7 for CIT; Mastercard 7. A Visa CIT authorised on Monday can't be captured the next Tuesday.
 
-**Stripe PaymentIntent** — Used by Stripe to track one payment's state.
+**Stripe PaymentIntent** — Used to track one payment's state in Stripe.
 - Example: `requires_payment_method → requires_confirmation → requires_action (3DS) → processing / requires_capture → succeeded | canceled`.
 
 **3DS / SCA (PSD2)** — Used in Europe to prove it is really the cardholder: 2 of 3 (something you know, have, are).
+- Example: paying online, the bank app asks for a fingerprint (are) on your phone (have).
 - note: with 3DS, fraud liability shifts to the issuer.
 
 | Actor | Role |
@@ -137,7 +177,11 @@ authorise ──► capture ──► settle ──► refund / partial refund
 | PSP | Stripe, Adyen, RocketGate: connects the merchant to the acquirer |
 
 **State machine** — Used to allow only the moves in a table and refuse the rest.
-- Example: `transition(p0, "captured", 8 * DAY)` throws: expired → captured.
+- Example: capture on day 1 works; capture on day 8 is refused.
+```js
+transition(p0, "captured", 1 * DAY).status; // result ==> "captured"
+transition(p0, "captured", 8 * DAY); // note: throws — illegal transition expired → captured
+```
 - In an interview: "I model the payment as a state machine with allowed transitions. A late capture is an illegal transition, not a stray if."
 
 → `04-Payments.js` §3 (state machine with an expiry guard)
@@ -147,15 +191,27 @@ authorise ──► capture ──► settle ──► refund / partial refund
 ## §4 Idempotency
 
 **Idempotency** — Used to make sure the same request only has its effect once, even if it is sent twice.
+- Example: a double click on "Pay" sends two `POST /charges` with the same key → one charge.
+```js
+[a.status, b.status].sort(); // result ==> [201, 409]
+charges; // result ==> 1
+```
 - note: networks fail and the client retries. Without it, you charge twice.
 
 **Idempotency key** — Used to tag a request so a retry can be recognised.
-- Example: the client generates a UUID v4. Stripe: `Idempotency-Key` header, up to 255 chars.
+- Example: the client generates a UUID v4 and sends `Idempotency-Key: 9b2f6c1e-…` (Stripe: header, up to 255 chars).
 
 **Request hash** — Used to catch the same key sent with a different body.
-- Example: same key + different body → error (Stripe compares the parameters). In the `.js`: 422.
+- Example: key `k1` first with €10.00, then with €99.99 → error (Stripe compares the parameters).
+```js
+(await store.run("k1", { amount: 9999, currency: "EUR" }, charge)).status; // result ==> 422
+```
 
 **Stored response** — Used to give a retry the **same** status + body, without running again.
+- Example: the client retries `k1` after it finished and gets the saved answer.
+```js
+await store.run("k1", body, charge); // result ==> { status: 201, body: { chargeId: "ch_1" } }
+```
 - note: Stripe v1 stores 500s too.
 
 **Unique lock** — Used to let the DB decide who wins when two requests arrive together.
@@ -169,8 +225,16 @@ ON CONFLICT (key) DO NOTHING;      -- 0 rows = already exists → replay or 409
 - note: the second request gets 409 "in progress"; the client retries later.
 
 **TTL** — Used to clean old keys. Stripe v1 may delete keys once they are ≥ 24 h old.
+- Example: a key sent on Monday and reused on Wednesday may be treated as a new request.
 
 **Atomic write** — Used to save the effect (ledger) and the response in the same DB transaction.
+- Example:
+```sql
+BEGIN;
+INSERT INTO entries ...;                                          -- the effect
+UPDATE idempotency_keys SET state = 'done', response = $r WHERE key = $1;
+COMMIT;                                                           -- both or neither
+```
 
 **Natural idempotency** — Used when the data already has a unique id.
 - Example: `UNIQUE(provider_event_id)` on webhooks; `UNIQUE(order_id)` on charges.
@@ -183,6 +247,10 @@ ON CONFLICT (key) DO NOTHING;      -- 0 rows = already exists → replay or 409
 ## §5 Retries
 
 **Retry** — Used to try again only when the error may go away on its own.
+- Example: the PSP answers 503 twice, then works.
+```js
+await withRetry(flaky); // result ==> "ok"  (3 calls)
+```
 - note: bad retries knock over the service that is recovering, and duplicate charges.
 
 | Retry | Don't retry |
@@ -191,18 +259,33 @@ ON CONFLICT (key) DO NOTHING;      -- 0 rows = already exists → replay or 409
 | 5xx, 429 (respect `Retry-After`) | Issuer decline (`card_declined`) |
 | — | Suspected fraud, stolen card |
 
-- Example: `isRetryable({ status: 402, code: "card_declined" })` → `false`.
+- Example: a 503 is retried; an issuer decline is not.
+```js
+isRetryable({ status: 503 }); // result ==> true
+isRetryable({ status: 402, code: "card_declined" }); // result ==> false
+```
 
 **Backoff + jitter** — Used to wait longer on each try, at a random time, so clients don't all retry at once.
-- Example: `wait = random(0, min(cap, base·2^n))`. `backoff(3, () => 0.5)` → 400 ms.
+- Example: `wait = random(0, min(cap, base·2^n))`; try 3 with base 100 ms and a random 0.5 waits 400 ms.
+```js
+backoff(3, () => 0.5); // result ==> 400
+```
 
 **Retry budget** — Used to cap retries: a token bucket per client; no tokens, no retry.
+- Example: a client gets 10 retry tokens; during an outage the 11th retry fails fast instead of adding load.
 - note: AWS: 3 attempts × 5 layers = **243×** load on the DB.
 
 **One layer** — Used to keep retries in a single place. Nested retries multiply.
+- Example: 3 tries in each of 5 layers.
+```js
+3 ** 5; // result ==> 243
+```
 
 **Unknown outcome** — Used for a timeout where you don't know if the charge happened.
-- Example: timeout after charging → `psp.find(key)` before the retry → 1 charge.
+- Example: the PSP charges `order-42`, the answer times out; the retry calls `psp.find(key)` first → 1 charge.
+```js
+psp.charges.size; // result ==> 1
+```
 - note: timeout ≠ failure. The PSP may have charged and the response got lost.
 - note: check the status at the PSP with the **same** key. If you can't, mark it `unknown` and let reconciliation decide.
 - In an interview: "I only retry transient errors, with backoff and jitter, in one layer, within a budget. A timeout is an unknown outcome: I check before retrying."
@@ -215,16 +298,23 @@ ON CONFLICT (key) DO NOTHING;      -- 0 rows = already exists → replay or 409
 
 **Race on a balance** — Used to name the bug where two requests change the same balance at the same time.
 - Example: two €30 withdrawals from €50 both go through (double-spend).
+```js
+acc.balance; // result ==> 2000n  (BUG: €60 went out, only €30 was debited)
+```
 - note: the trap is read → check in code → write. Between the read and the write, the world changed.
 
 **Conditional update** — Used for the simple case: atomic on one row.
-- Example: `UPDATE ... SET balance = balance - $x WHERE balance >= $x`.
+- Example: withdraw €30 → `UPDATE accounts SET balance = balance - 3000 WHERE id = $id AND balance >= 3000`; 0 rows updated = declined.
 
 **Optimistic lock (`version`)** — Used when conflicts are rare: write only if the version is still the one you read.
 - Example:
 ```sql
 UPDATE accounts SET balance = $new, version = version + 1
 WHERE id = $id AND version = $read_version;   -- 0 rows → conflict, re-read
+```
+```js
+results.sort(); // result ==> ["declined", "ok"]
+row.balance; // result ==> 2000n
 ```
 
 **`SELECT ... FOR UPDATE`** — Used when many requests hit one account: lock the row first.
@@ -238,13 +328,17 @@ COMMIT;
 - note: lock in id order to avoid deadlock.
 
 **`SERIALIZABLE`** — Used when the rule spans several rows. Be ready to retry on serialization errors.
+- Example: "at most €1000 out per day across all of a customer's accounts" → run it in a `SERIALIZABLE` transaction; Postgres error `40001` → retry the whole transaction.
 
 **Unique constraint** — Used when "only one can win": idempotency, one refund per payment.
+- Example: `refunds` has `UNIQUE(payment_id)`; the second refund INSERT fails, so the payment is refunded once.
 
 **One writer per account** — Used to remove the race instead of managing it (queue/partition by `account_id`).
+- Example: all of alice's postings go to partition `hash("alice") % partitions`; one consumer applies them one by one.
 - note: **[inferred]** It is a common pattern in high-volume ledgers.
 
-**Go mutex** — `sync.Mutex` protects one process's memory, not a DB shared by several replicas.
+**Go mutex** — Used to protect one process's memory (`sync.Mutex`), not a DB shared by several replicas.
+- Example: 2 replicas, each with its own mutex → both withdrawals still pass. The lock must live in the DB.
 - In an interview: "The DB is the referee: a conditional update, a version, or FOR UPDATE. I never check the balance in code between a read and a write."
 
 → `04-Payments.js` §6 (lost update reproduced and fixed with `version`)
@@ -254,25 +348,37 @@ COMMIT;
 ## §7 Consistency across systems
 
 **Consistency** — Used to keep the ledger, PSP, queue and emails in agreement without a distributed transaction.
+- Example: the ledger posts a €25 payment, and the email service must hear `payment.succeeded`.
 - note: "I wrote to the DB but the event never went out" (or the reverse) is the classic bug.
 - note: the trap is `db.commit(); kafka.publish()` — if the process dies in between, the event is lost.
 
 **Outbox** — Used to send an event safely: write it to an `outbox` table in the **same** transaction; a relay publishes it later.
+- Example:
+```sql
+BEGIN;
+INSERT INTO entries ...;
+INSERT INTO outbox (event_id, type, payload) VALUES ($e, 'payment.succeeded', $p);
+COMMIT;   -- the relay reads outbox and publishes to Kafka
+```
 
 **At-least-once** — Used to describe delivery where an event may arrive 2×. So the consumer must be idempotent.
+- Example: the relay publishes, then crashes before marking the row sent → it publishes the same event again.
 
 **Idempotent consumer** — Used to process each event once: `UNIQUE(event_id)` in a `processed_events` table, inside the effect's transaction.
+- Example: `INSERT INTO processed_events (event_id) VALUES ($e) ON CONFLICT DO NOTHING` → 0 rows = seen before, skip.
 
 **Kafka ordering** — Used to keep one account's events in order.
 - Example: key = `account_id`. Ordering only holds within a partition.
 
 **Saga** — Used to undo a multi-step flow with **compensations** (refund, release the hold), not a rollback.
+- Example: hold €300 → book the flight → ticketing fails → compensate: cancel the booking, release the hold.
 
 **Webhooks** — Used by a PSP to tell you something happened.
 - Example: verify the HMAC signature; dedupe by id; reply 2xx fast and process from a queue.
 - note: they can arrive out of order — `refunded` before `succeeded`. Use the state machine (§3) and ignore backward moves, or re-read the object from the API.
 
-**Exactly-once** — In practice = at-least-once + idempotency.
+**Exactly-once** — Used to name the goal "the effect happens once". In practice = at-least-once + idempotency.
+- Example: event `e1` arrives twice; the second `processed_events` insert conflicts → no second effect.
 - In an interview: "Outbox to publish, idempotent consumers to receive, sagas with compensations across services. Exactly-once is at-least-once plus dedupe."
 
 ---
@@ -280,6 +386,7 @@ COMMIT;
 ## §8 Reconciliation & settlement
 
 **Reconciliation** — Used to compare your ledger with the PSP's reports and the bank statement.
+- Example: PSP report `ch_1 €25.00` ↔ ledger `set-1 €25.00` → matched; `ch_2 €10.00` at the PSP with nothing on our side → exception queue.
 - note: it is the safety net. It catches what idempotency and retries missed.
 - note: never reconcile on the day's total. Go line by line, by reference.
 
@@ -292,30 +399,36 @@ COMMIT;
 | Exceptions | A queue for humans; never "adjust" a balance by hand without a posting |
 
 **FX record** — Used to make a converted amount reproducible: store the rate, its source, the timestamp and the amount in both currencies.
+- Example: `{ from: "EUR", to: "USD", rate: "1.08425", source: "primary", at: "2026-11-13T15:00:00Z", amountFrom: 10000n, amountTo: 10842n }`.
 - note: never recalculate later.
 
 **Rate fallback** — Used when the rate source fails: a secondary source with a maximum age; if both fail, refuse rather than make one up.
+- Example: primary down, secondary rate is 2 h old, max age is 1 h → refuse the conversion.
 
-**FX rounding** — Convert into the minor unit with half-even (§1) and record the result.
+**FX rounding** — Used to convert into the minor unit with half-even (§1) and record the result.
+- Example: €100.00 × 1.08425 = $108.425 → $108.42 (the tie goes to the even cent).
+```js
+divHalfEven(10000n * 108425n, 100000n); // result ==> 10842n
+```
 - In an interview: "Daily reconciliation, line by line, by external reference. For FX I store the rate, the source and the time — the amount must be reproducible."
 
 ---
 
 ## §9 Rails and a short glossary
 
-| Term | One line |
-|-------|-----------|
-| SEPA SCT | Euro bank transfer; settles the next business day |
-| SEPA SCT Inst | Instant, 24/7, ≤ 10 s; IPR (EU) 2024/886 has required it of euro-area PSPs since 9 Oct 2025 |
-| SEPA SDD | Direct debit; needs a mandate; the debtor can dispute it |
-| SWIFT | Messaging network between banks (international); does not move money by itself |
-| ISO 20022 | XML message standard. `pain` customer↔bank, `pacs` bank↔bank, `camt` statements |
-| Examples | `pain.001` order, `pacs.008` transfer, `pacs.002` status, `camt.053` statement |
-| Card schemes | Visa, Mastercard, Amex: rules, network, interchange fees |
-| IBAN / BIC | Account id / bank id |
-| KYC / AML | Know your customer / anti-money laundering (screening, monitoring) |
-| PCI DSS | Rules for card data. **Never** store the full PAN or the CVV |
-| Tokenisation | The PSP stores the card; you store a token (`pm_...`) |
+| Term | One line | Example |
+|-------|-----------|---------|
+| SEPA SCT | Euro bank transfer; settles the next business day | Rent sent Friday arrives Monday |
+| SEPA SCT Inst | Instant, 24/7, ≤ 10 s; IPR (EU) 2024/886 has required it of euro-area PSPs since 9 Oct 2025 | €20 to a friend on Sunday night arrives in seconds |
+| SEPA SDD | Direct debit; needs a mandate; the debtor can dispute it | The gym pulls €30 each month |
+| SWIFT | Messaging network between banks (international); does not move money by itself | A EUR → USD payment to a US bank |
+| ISO 20022 | XML message standard. `pain` customer↔bank, `pacs` bank↔bank, `camt` statements | See the row below |
+| Examples | `pain.001` order, `pacs.008` transfer, `pacs.002` status, `camt.053` statement | Company payroll file = `pain.001` |
+| Card schemes | Visa, Mastercard, Amex: rules, network, interchange fees | The issuer earns interchange on each purchase |
+| IBAN / BIC | Account id / bank id | `DE89 3704 0044 0532 0130 00` / `DEUTDEFF` |
+| KYC / AML | Know your customer / anti-money laundering (screening, monitoring) | ID check at sign-up; names screened against sanctions lists |
+| PCI DSS | Rules for card data. **Never** store the full PAN or the CVV | Store `last4: "4242"`, never the 16 digits |
+| Tokenisation | The PSP stores the card; you store a token (`pm_...`) | Charge `pm_123` next month, no card data on your side |
 
 - **[inferred]** The ISO 20022 examples above are from memory; the official page (iso20022.org) returned 403.
 - In an interview: "Cards are authorisation plus deferred settlement; SEPA Inst is push and final within seconds. I don't store the PAN or CVV — I tokenise at the PSP."
