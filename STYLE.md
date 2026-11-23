@@ -62,3 +62,14 @@ expressao; // result ==> valor
 // nota: com "break" sem nome, só sai o loop de dentro e o de fora continua, por isso aparecem o 5 e o 6.
 // nota2: grelha[1][0] → primeiro a linha, depois a coluna.
 ```
+
+## Algoritmos: construir por camadas
+
+Para um algoritmo, faço como no vídeo da LC 200: o código vai crescendo, uma camada de cada vez.
+
+- O passo 1 é o esqueleto: a função, o contador, o ciclo principal, a chamada a uma função auxiliar com nome e o `return`.
+- Cada passo seguinte preenche uma parte. Marco no código onde cada parte entra, com `// passo 2 — …`, `// passo 3 — …`.
+- Cada caso tem o seu `if` explícito, com um comentário simples por cima: `// cima`, `// baixo`, `// esquerda`, `// direita`. Repetir código é aceitável.
+- Uso nomes completos (`row`, `col`, `count`, `seen`) e escrevo sempre os limites (`row > 0`).
+- Não uso truques no código de estudo: arrays de direções com `dr/dc`, `?.` para fugir aos limites, `head++` em vez de `shift()`, `continue`, várias instruções numa linha.
+- A otimização fica numa nota no fim: `// nota: shift() é O(n); com um índice fica O(1).`
