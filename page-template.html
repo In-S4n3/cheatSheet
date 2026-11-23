@@ -54,8 +54,43 @@ details.sec.is-done .num { background: var(--done); color: var(--surface); }
 details.sec.is-done .title { color: var(--muted); }
 .body { padding: 0 14px 14px; min-width: 0; }
 
-pre { margin: 0; background: var(--code-bg); border-radius: 8px; padding: 12px; font: 0.82rem/1.55 var(--f-code); white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 2; }
-.cases { display: grid; gap: 10px; min-width: 0; }
+pre { margin: 0; background: var(--code-bg); border-radius: 8px; padding: 14px; font: 0.88rem/1.65 var(--f-code); white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 2; }
+.cases { display: grid; gap: 28px; min-width: 0; }
+/* one concept = one card: title, plain-text boxes, then the code on its own */
+.case { display: grid; gap: 12px; min-width: 0; padding-top: 18px; border-top: 2px solid var(--line); }
+.cases .case:first-child { border-top: 0; padding-top: 4px; }
+.case-name { margin: 0; font: 700 1.15rem/1.25 var(--f-head); }
+.case-sub { margin: -6px 0 0; color: var(--muted); }
+.lbl { display: block; font: 700 0.72rem var(--f-head); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 2px; }
+.code-lbl { margin-bottom: -6px; }
+.f { padding: 10px 14px; border-radius: 10px; max-width: 70ch; }
+.f code { font: 0.85em var(--f-code); background: var(--code-bg); padding: 1px 4px; border-radius: 4px; }
+.f.serve { background: var(--accent-soft); font-size: 1.05rem; }
+.f.serve .lbl, .f.rule .lbl { color: var(--accent); }
+.f.rule { border: 1px solid var(--accent); }
+.f.keep { padding-block: 0; color: var(--muted); font-size: 0.92rem; }
+.f.confuse { border-left: 4px solid var(--c-str); background: var(--code-bg); border-radius: 0 10px 10px 0; }
+.f.confuse .lbl { color: var(--c-str); }
+.f.recall { border-left: 4px solid var(--done); background: var(--code-bg); border-radius: 0 10px 10px 0; font-weight: 700; }
+.f.recall .lbl { color: var(--done); }
+.f.quiz { border: 1px dashed var(--accent); }
+.f.intro { background: var(--code-bg); margin-bottom: 14px; max-width: none; }
+.f.intro p { margin: 0 0 4px; }
+.intro-code { margin-bottom: 14px; }
+.hljs-comment.res { color: var(--done); font-weight: 600; }
+details.adv > summary { cursor: pointer; color: var(--muted); font: 500 0.9rem var(--f-head); }
+details.adv > p { margin: 6px 0 0; color: var(--muted); }
+details.answer > summary { cursor: pointer; color: var(--accent); font: 600 0.95rem var(--f-head); padding: 8px 0 0; }
+details.answer > p { margin: 6px 0 0; }
+.stepper { display: flex; align-items: center; gap: 8px; margin: 4px 0 14px; }
+.stepper .pos { color: var(--muted); font: 600 0.9rem var(--f-head); font-variant-numeric: tabular-nums; text-align: center; }
+.stepper .mode { margin-left: auto; color: var(--muted); }
+.stepper button[data-step] { padding: 8px 14px; font-size: 0.95rem; }
+.stepper button:disabled { opacity: 0.4; cursor: default; }
+.stepper button { white-space: nowrap; }
+.stepper .mode { padding: 6px 8px; }
+.case[hidden], .stepper[hidden], .stepper [hidden] { display: none; }
+.cases + .stepper { margin: 18px 0 0; }
 .md { min-width: 0; }
 .md h2 { font: 700 1.1rem var(--f-head); margin: 1.2em 0 0.4em; }
 .md h3 { font: 600 1rem var(--f-head); margin: 1em 0 0.3em; }
@@ -115,14 +150,109 @@ function renderBody(sec) {
     const html = window.marked ? marked.parse(sec.body) : `<pre>${esc(sec.body)}</pre>`;
     return `<div class="md">${html.replace(/<table>/g, '<div class="table-wrap"><table>').replace(/<\/table>/g, "</table></div>")}</div>`;
   }
-  // each "//-----" separator starts a new case → its own block
-  return `<div class="cases">${sec.body
-    .split(/^\s*\/\/-{20,}\s*$/m)
-    .map((c) => c.trim())
-    .filter(Boolean)
-    .map((c) => `<pre><code>${window.hljs ? hljs.highlight(c, { language: "javascript" }).value : esc(c)}</code></pre>`)
-    .join("")}</div>`;
+  // each "//-----" separator starts a new case → its own card; the prose comments become text boxes, only real code stays in <pre>
+  const cases = sec.body.split(/^\s*\/\/-{20,}\s*$/m).map((c) => c.trim()).filter(Boolean).map(parseCase);
+  // the block before the first labelled case is the section's intro ("Usar quando…"): a note on top, not a step
+  const intro = cases.length && !Object.keys(cases[0].f).length && !cases[0].titled ? cases.shift() : null;
+  const hl = (s) => {
+    const h = window.hljs ? hljs.highlight(s, { language: "javascript" }).value : esc(s);
+    return h.replace(/<span class="hljs-comment">\/\/ result ==&gt;/g, '<span class="hljs-comment res">// result ==&gt;');
+  };
+  const txt = (s) => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>");
+  const box = (cls, label, s) => (s ? `<div class="f ${cls}"><span class="lbl">${label}</span>${txt(s)}</div>` : "");
+  const html = cases.map((c, i) => `<article class="case" data-i="${i}">
+      ${c.name ? `<h3 class="case-name">${txt(c.name)}</h3>${c.sub && !c.titled ? `<p class="case-sub">${txt(c.sub)}</p>` : ""}` : ""}
+      ${box("serve", "Para que serve", c.titled ? c.sub.replace(/^serve para\s*/i, "") : c.f["Para que serve"])}
+      ${box("rule", "Regra essencial", c.f["Regra essencial"])}
+      ${box("keep", "O que guarda", c.f["O que guarda"])}
+      ${c.code ? `<span class="lbl code-lbl">Exemplo</span><pre><code>${hl(c.code)}</code></pre>` : ""}
+      ${box("confuse", "Confusão possível", c.f["Confusão possível"])}
+      ${box("recall", "Para recordar", c.f["Para recordar"])}
+      ${c.f["Avançado"] ? `<details class="adv"><summary>Avançado</summary><p>${txt(c.f["Avançado"])}</p></details>` : ""}
+      ${c.f["Pergunta"] ? `<div class="f quiz"><span class="lbl">Pergunta</span>${txt(c.f["Pergunta"])}${c.f["Resposta"] ? `<details class="answer"><summary>Ver resposta</summary><p>${txt(c.f["Resposta"])}</p></details>` : ""}</div>` : ""}
+    </article>`).join("");
+  const nav = cases.length > 1 ? `<div class="stepper"><button type="button" data-step="-1" aria-label="Anterior">←</button><span class="pos"></span><button type="button" data-step="1">Seguinte →</button><button type="button" class="mode"></button></div>` : "";
+  const introLines = intro ? intro.raw.split("\n").filter((l) => l.trim()) : [];
+  const introHtml = !intro ? ""
+    : introLines.every((l) => /^\s*\/\//.test(l))
+      ? introLines.some((l) => /[{};]|^\s*\/\/\s*(let|const|while|if|for|else|return)\b/.test(l))
+        ? `<pre class="intro-code"><code>${hl(intro.raw.split("\n").map((l) => l.replace(/^(\s*)\/\/ ?/, "$1")).join("\n"))}</code></pre>` // a commented-out template: keep it monospace
+        : `<div class="f intro">${introLines.map((l) => `<p>${txt(l.replace(/^\s*\/\/\s?/, ""))}</p>`).join("")}</div>`
+      : `<pre class="intro-code"><code>${hl(intro.raw)}</code></pre>`;
+  return `${introHtml}${nav}<div class="cases">${html}</div>${nav}`;
 }
+
+/*parse:start*/
+// Splits one case into its title, labelled prose fields ("// Label: text", with "//   " continuation lines) and the code that is left
+function parseCase(c) {
+  const LABELS = ["Para que serve", "Regra essencial", "O que guarda", "Confusão possível", "Para recordar", "Avançado", "Pergunta", "Resposta"];
+  const re = new RegExp(`^\\s*// (${LABELS.join("|")}):\\s*(.*)$`);
+  const lines = c.split("\n");
+  const out = { name: "", sub: "", f: {}, code: "", raw: c };
+  const code = [];
+  let cur = null;
+  let i = 0;
+  // first line "// NAME — what it does" is the card title (only when it carries no label)
+  const own = lines[0].match(/^\s*\/\/ (.+?) - \/\/ (.+)$/); // his own shape: "// nome - // serve para …"
+  if (own) {
+    out.name = own[1].trim();
+    out.sub = own[2].trim();
+    out.titled = true;
+    i = 1;
+  } else if (/^\s*\/\/ /.test(lines[0]) && !re.test(lines[0])) {
+    const t = lines[0].replace(/^\s*\/\/\s*/, "");
+    const [name, ...rest] = t.split(" — ");
+    out.name = name.trim();
+    out.sub = rest.join(" — ").trim();
+    i = 1;
+  }
+  for (; i < lines.length; i++) {
+    const l = lines[i];
+    const m = l.match(re);
+    if (m) { cur = m[1]; out.f[cur] = out.f[cur] ? out.f[cur] + " " + m[2] : m[2]; continue; }
+    if (cur && /^\s*\/\/\s{2,}\S/.test(l)) { out.f[cur] += " " + l.replace(/^\s*\/\/\s*/, ""); continue; }
+    cur = null;
+    code.push(l);
+  }
+  while (code.length && !code[0].trim()) code.shift();
+  while (code.length && !code.at(-1).trim()) code.pop();
+  out.code = code.join("\n");
+  return out;
+}
+/*parse:end*/
+
+// "Um de cada vez": shows one case of an open section, with Anterior / Seguinte
+let oneAtATime = store.get("oneAtATime") ?? true;
+function showCase(body, idx) {
+  const cases = [...body.querySelectorAll(".case")];
+  if (!cases.length) return;
+  idx = Math.max(0, Math.min(cases.length - 1, idx));
+  body.dataset.idx = idx;
+  cases.forEach((c, i) => (c.hidden = oneAtATime && i !== idx));
+  body.querySelectorAll(".stepper").forEach((s) => {
+    s.querySelector(".pos").textContent = oneAtATime ? `${idx + 1} de ${cases.length}` : `${cases.length} conceitos`;
+    s.querySelectorAll("[data-step]").forEach((b) => (b.hidden = !oneAtATime));
+    s.querySelector("[data-step='-1']").disabled = idx === 0;
+    s.querySelector("[data-step='1']").disabled = idx === cases.length - 1;
+    s.querySelector(".mode").textContent = oneAtATime ? "Todos" : "Um a um";
+  });
+  // a second stepper only helps at the bottom of a long list
+  const bottom = body.querySelectorAll(".stepper")[1];
+  if (bottom) bottom.hidden = !oneAtATime;
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest(".stepper button");
+  if (!b) return;
+  const body = b.closest(".body");
+  if (b.classList.contains("mode")) {
+    oneAtATime = !oneAtATime;
+    store.set("oneAtATime", oneAtATime);
+    document.querySelectorAll(".body").forEach((x) => x.querySelector(".case") && showCase(x, +x.dataset.idx || 0));
+  } else {
+    showCase(body, (+body.dataset.idx || 0) + +b.dataset.step);
+    if (b.closest(".stepper") === body.querySelectorAll(".stepper")[1]) body.closest("details.sec").scrollIntoView({ block: "start" });
+  }
+});
 
 function card(tab, sec, i, showFrom) {
   const key = `${tab.id}:${sec.n || "x" + i}:${sec.title}`;
@@ -144,7 +274,7 @@ function card(tab, sec, i, showFrom) {
   // render the content only when opened (keeps the page light on phones)
   d.addEventListener("toggle", () => {
     const body = d.querySelector(".body");
-    if (d.open && !body.innerHTML) body.innerHTML = renderBody(sec);
+    if (d.open && !body.innerHTML) { body.innerHTML = renderBody(sec); showCase(body, 0); }
   });
   return d;
 }
