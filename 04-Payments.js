@@ -30,26 +30,26 @@ const crypto = require("node:crypto");
 // Resposta: false. 0.1 * 3 dá 0.30000000000000004; em cêntimos, 10n * 3n === 30n dá true.
 
 //--------------------------------------------------------------------
-// toMinor() — texto "12.34" → inteiro na unidade mínima
+// toMinor() — string "12.34" → inteiro na unidade mínima
 // Para que serve: o cliente escreve "12.34" € e o sistema guarda 1234 cêntimos.
-// Regra essencial: as casas decimais vêm da moeda (ISO 4217). Ler do texto, nunca de um float.
-// O que guarda: EXPONENT — chave = código da moeda; valor = número de casas decimais.
-//               minor = o valor em unidades mínimas, como BigInt.
+// Regra essencial: as casas decimais vêm da moeda (ISO 4217). Ler da string, nunca de um float.
+// O que guarda: EXPONENT — key = código da moeda; value = número de casas decimais.
+//               minor = o value em unidades mínimas, como BigInt.
 
 const EXPONENT = { JPY: 0, EUR: 2, USD: 2, BHD: 3 };
 
 function toMinor(str, currency) {
   const exp = EXPONENT[currency];
   if (exp === undefined) throw new Error(`moeda desconhecida ${currency}`);
-  if (!/^-?\d+(\.\d+)?$/.test(str)) throw new Error(`valor inválido ${str}`);
+  if (!/^-?\d+(\.\d+)?$/.test(str)) throw new Error(`invalid amount ${str}`);
   const [int, frac = ""] = str.replace("-", "").split(".");
-  if (frac.length > exp) throw new Error(`${currency} só tem ${exp} casas decimais`);
+  if (frac.length > exp) throw new Error(`${currency} only has ${exp} decimal places`);
   const minor = BigInt(int + frac.padEnd(exp, "0")); // "12" + "34" → 1234n
   return str.startsWith("-") ? -minor : minor;
 }
 
 // Antes → operação → depois
-//   texto     moeda   casas   depois
+//   string    moeda   casas   depois
 //   "12.34"   EUR     2       1234n
 //   "500"     JPY     0       500n
 //   "1.234"   BHD     3       1234n
@@ -64,9 +64,9 @@ assert.throws(() => toMinor("1.234", "EUR")); // note: lança erro — EUR só t
 // Resposta: 750n. A parte "5" é completada para "50" (2 casas), e "7" + "50" = 750.
 
 //--------------------------------------------------------------------
-// fromMinor() — inteiro → texto para mostrar ao cliente
+// fromMinor() — inteiro → string para mostrar ao cliente
 // Para que serve: mostrar 5 cêntimos como "0.05" num recibo.
-// Regra essencial: só se converte para texto na saída; as contas fazem-se sempre em inteiros.
+// Regra essencial: só se converte para string na saída; as contas fazem-se sempre em inteiros.
 // O que guarda: s = os dígitos com zeros à esquerda; out = os dígitos com o ponto no sítio certo.
 
 function fromMinor(minor, currency) {
@@ -84,8 +84,8 @@ function fromMinor(minor, currency) {
 fromMinor(5n, "EUR"); // result ==> "0.05"
 fromMinor(-1234n, "BHD"); // result ==> "-1.234"
 
-// Confusão possível: guardar "0.05" vs guardar 5n — o texto é só para ler; guardar texto obriga a converter em cada conta.
-// Para recordar: inteiro dentro, texto só à saída.
+// Confusão possível: guardar "0.05" vs guardar 5n — a string é só para ler; guardar strings obriga a converter em cada conta.
+// Para recordar: inteiro dentro, string só à saída.
 // Pergunta: quanto dá fromMinor(500n, "JPY")?
 // Resposta: "500". JPY tem 0 casas, por isso não há ponto.
 
@@ -123,10 +123,10 @@ divHalfEven(-25n, 10n); // result ==> -2n
 // pontos base (basis points) — taxas como inteiros
 // Para que serve: cobrar uma comissão de 1,5% sobre €1234,56 sem usar floats.
 // Regra essencial: 1 bp = 0,01%, logo 150 bp = 1,5%. Multiplicar primeiro, dividir por 10 000 no fim.
-// O que guarda: bruto = cêntimos × bp (ainda sem dividir); fee = comissão em cêntimos, já arredondada.
+// O que guarda: gross = cêntimos × bp (ainda sem dividir); fee = comissão em cêntimos, já arredondada.
 
-const bruto = 123456n * 150n; // result ==> 18518400n
-const fee = divHalfEven(bruto, 10000n); // result ==> 1852n
+const gross = 123456n * 150n; // result ==> 18518400n
+const fee = divHalfEven(gross, 10000n); // result ==> 1852n
 
 // Antes → operação → depois
 //   passo                 valor
@@ -175,8 +175,8 @@ allocate(100n, [70n, 30n]); // result ==> [70n, 30n]
 //--------------------------------------------------------------------
 // Ledger — o livro onde cada movimento soma zero
 // Para que serve: registar cada euro que entra ou sai, sem nunca apagar nada.
-// Regra essencial: cada transação tem ≥ 2 lançamentos que somam 0; o saldo é a SOMA dos lançamentos, não uma coluna editada.
-// O que guarda: #entries = lista só de acrescentar (append-only) de { txId, phase, account, amount };
+// Regra essencial: cada transação tem ≥ 2 lançamentos que somam 0; o saldo é a SOMA dos lançamentos, não uma column editada.
+// O que guarda: #entries = array só de acrescentar (append-only) de { txId, phase, account, amount };
 //               #txIds = ids já usados (impede a mesma transação duas vezes);
 //               #internal = contas internas do banco, que podem ficar negativas.
 //               amount: + entra na conta, − sai da conta. phase: "committed" (liquidado) ou "pending" (retido).
@@ -189,10 +189,10 @@ class Ledger {
   openInternal(acc) { this.#internal.add(acc); }
 
   #post(txId, phase, legs) {
-    if (this.#txIds.has(txId)) throw new Error(`tx duplicada ${txId}`);
-    if (legs.length < 2) throw new Error("precisa de ≥ 2 lançamentos");
+    if (this.#txIds.has(txId)) throw new Error(`duplicate tx ${txId}`);
+    if (legs.length < 2) throw new Error("needs ≥ 2 entries");
     const sum = legs.reduce((s, l) => s + l.amount, 0n);
-    if (sum !== 0n) throw new Error(`tx ${txId} não soma zero (${sum})`);
+    if (sum !== 0n) throw new Error(`tx ${txId} does not sum to zero (${sum})`);
     this.#txIds.add(txId);
     for (const l of legs) this.#entries.push(Object.freeze({ txId, phase, ...l }));
   }
@@ -206,16 +206,16 @@ class Ledger {
   // Disponível = liquidado − retenções a SAIR. Uma retenção a entrar não conta.
   // Soma por retenção (hold): uma retenção libertada soma 0 e deixa de contar.
   available(acc) {
-    const porHold = new Map(); // chave = id da autorização; valor = soma pendente dessa autorização nesta conta
+    const byHold = new Map(); // key = id da autorização; value = soma pendente dessa autorização nesta conta
     for (const e of this.#entries)
-      if (e.account === acc && e.phase === "pending") porHold.set(e.hold, (porHold.get(e.hold) ?? 0n) + e.amount);
-    let retido = 0n;
-    for (const v of porHold.values()) if (v < 0n) retido += v;
-    return this.balance(acc) + retido;
+      if (e.account === acc && e.phase === "pending") byHold.set(e.hold, (byHold.get(e.hold) ?? 0n) + e.amount);
+    let held = 0n;
+    for (const v of byHold.values()) if (v < 0n) held += v;
+    return this.balance(acc) + held;
   }
 
   #checkFunds(acc, amount) {
-    if (!this.#internal.has(acc) && this.available(acc) < amount) throw new Error(`saldo insuficiente em ${acc}`);
+    if (!this.#internal.has(acc) && this.available(acc) < amount) throw new Error(`insufficient funds in ${acc}`);
   }
 
   transfer(txId, from, to, amount) {
@@ -233,7 +233,7 @@ class Ledger {
   settle(txId, authTxId, finalAmount) {
     const auth = this.#entries.filter((e) => e.txId === authTxId);
     const [from, to] = [auth.find((e) => e.amount < 0n), auth.find((e) => e.amount > 0n)];
-    if (finalAmount > to.amount) throw new Error("liquidação acima do autorizado");
+    if (finalAmount > to.amount) throw new Error("settlement above authorised amount");
     this.#post(`${txId}:release`, "pending", auth.map((e) => ({ account: e.account, amount: -e.amount, hold: authTxId })));
     this.#post(txId, "committed", [{ account: from.account, amount: -finalAmount }, { account: to.account, amount: finalAmount }]);
   }
@@ -241,7 +241,7 @@ class Ledger {
   // Corrigir = nova transação, ao contrário, com referência à original. Nunca editar a original.
   reverse(txId, originalTxId) {
     const orig = this.#entries.filter((e) => e.txId === originalTxId && e.phase === "committed");
-    if (orig.length === 0) throw new Error("nada para estornar");
+    if (orig.length === 0) throw new Error("nothing to reverse");
     this.#post(txId, "committed", orig.map((e) => ({ account: e.account, amount: -e.amount, reverses: originalTxId })));
   }
 
@@ -249,7 +249,7 @@ class Ledger {
   assertInvariants() {
     for (const phase of ["pending", "committed"]) {
       const total = this.#entries.filter((e) => e.phase === phase).reduce((s, e) => s + e.amount, 0n);
-      assert.equal(total, 0n, `ledger desequilibrado na fase ${phase}`);
+      assert.equal(total, 0n, `ledger unbalanced in phase ${phase}`);
     }
   }
 }
@@ -265,7 +265,7 @@ class Ledger {
 //   DEBITA a caixa do banco (ativo sobe) e CREDITA a conta do cliente (passivo do banco sobe). Os sinais mudam; a soma zero não.
 // Para recordar: cada transação soma 0; o saldo é derivado; corrigir = estornar.
 // Pergunta: que acontece se uma transação tiver os lançamentos −3000n e +2000n?
-// Resposta: #post lança erro "não soma zero (-1000)". Nada é gravado: a verificação vem antes do push.
+// Resposta: #post lança erro "does not sum to zero (-1000)". Nada é gravado: a verificação vem antes do push.
 
 //--------------------------------------------------------------------
 // transfer() — mover dinheiro já
@@ -284,9 +284,9 @@ L.transfer("dep-1", "bank:cash", "alice", 10000n); // depósito de €100,00
 //   soma         0                                   0
 L.balance("alice"); // result ==> 10000n
 L.balance("bank:cash"); // result ==> -10000n
-assert.throws(() => L.transfer("dep-1", "bank:cash", "alice", 1n), /duplicada/); // note: lança erro — mesmo txId duas vezes
+assert.throws(() => L.transfer("dep-1", "bank:cash", "alice", 1n), /duplicate/); // note: lança erro — mesmo txId duas vezes
 
-// Confusão possível: txId vs idempotency key — o txId impede a mesma transação no ledger; a chave (§4) impede o mesmo pedido HTTP de correr duas vezes.
+// Confusão possível: txId vs idempotency key — o txId impede a mesma transação no ledger; a key (§4) impede o mesmo request HTTP de correr duas vezes.
 // Para recordar: transferir = −X de um lado, +X do outro.
 // Pergunta: depois de L.transfer("dep-2", "bank:cash", "alice", 500n), quanto dá L.balance("alice")?
 // Resposta: 10500n. 10000 + 500; é um txId novo, por isso é aceite.
@@ -309,7 +309,7 @@ L.balance("alice"); // result ==> 10000n  (o liquidado continua €100)
 L.balance("alice", "pending"); // result ==> -3000n
 L.available("alice"); // result ==> 7000n  (pode gastar €70)
 L.available("merchant"); // result ==> 0n  (uma retenção a entrar não é dinheiro disponível)
-assert.throws(() => L.authorise("auth-2", "alice", "merchant", 8000n), /insuficiente/); // note: lança erro — 8000 > 7000 disponíveis
+assert.throws(() => L.authorise("auth-2", "alice", "merchant", 8000n), /insufficient/); // note: lança erro — 8000 > 7000 disponíveis
 
 // Confusão possível: saldo vs saldo disponível — saldo = liquidado; disponível = liquidado − retenções a sair.
 // Para recordar: retido ≠ liquidado.
@@ -336,7 +336,7 @@ L.available("alice"); // result ==> 7500n
 // Confusão possível: captura parcial vs reembolso parcial — na captura parcial os €5 nunca saíram (a retenção é libertada); um reembolso devolve dinheiro que já saiu.
 // Para recordar: liquidar = libertar a retenção + mover o valor final.
 // Pergunta: e se a loja tentasse liquidar €35 (3500n)?
-// Resposta: erro "liquidação acima do autorizado". 3500 > 3000 retidos.
+// Resposta: erro "settlement above authorised amount". 3500 > 3000 retidos.
 
 //--------------------------------------------------------------------
 // reverse() — corrigir com o lançamento oposto
@@ -367,8 +367,8 @@ L.assertInvariants(); // note: lança erro se alguma fase não somar 0
 // transition() — só deixar fazer os passos permitidos
 // Para que serve: impedir a loja de capturar uma autorização que já expirou.
 // Regra essencial: um passo só é válido se estiver na tabela. Uma autorização expirada conta como "expired".
-// O que guarda: TRANSITIONS — chave = estado atual; valor = estados para onde pode ir.
-//               payment = { status, authExpiresAt }; now = instante do pedido (ms).
+// O que guarda: TRANSITIONS — key = estado atual; value = estados para onde pode ir.
+//               payment = { status, authExpiresAt }; now = instante do request (ms).
 
 const TRANSITIONS = {
   authorised: ["captured", "voided", "expired"],
@@ -381,7 +381,7 @@ const TRANSITIONS = {
 function transition(payment, to, now = Date.now()) {
   // Guarda de autorização tardia: depois de expirar, o estado efetivo é "expired".
   const from = payment.status === "authorised" && now > payment.authExpiresAt ? "expired" : payment.status;
-  if (!(TRANSITIONS[from] ?? []).includes(to)) throw new Error(`transição ilegal ${from} → ${to}`);
+  if (!(TRANSITIONS[from] ?? []).includes(to)) throw new Error(`illegal transition ${from} → ${to}`);
   return { ...payment, status: to };
 }
 
@@ -403,26 +403,26 @@ assert.throws(() => transition(p0, "refunded", 1 * DAY), /authorised → refunde
 // Resposta: não. O estado efetivo é "expired", que não tem saídas: a retenção já foi libertada sozinha.
 
 // =====================================================================================
-// §4 ── IDEMPOTÊNCIA ── (chave + hash do pedido + resposta guardada)
+// §4 ── IDEMPOTÊNCIA ── (key + hash do request + response guardada)
 // =====================================================================================
 
 //--------------------------------------------------------------------
-// IdempotencyStore — mesma chave, um só efeito
-// Para que serve: um duplo clique em "Pagar €10" envia dois pedidos com a mesma chave; só se cobra uma vez.
-// Regra essencial: a chave é RESERVADA antes de cobrar. O segundo pedido vê "em curso" e recebe 409.
-// O que guarda: #rows é um Map; chave = idempotency key; valor = { hash do corpo, state, response }.
+// IdempotencyStore — mesma key, um só efeito
+// Para que serve: um duplo clique em "Pagar €10" envia dois requests com a mesma key; só se cobra uma vez.
+// Regra essencial: a key é RESERVADA antes de cobrar. O segundo request vê "em curso" e recebe 409.
+// O que guarda: #rows é um Map; key = idempotency key; value = { hash do body, state, response }.
 //               charges = quantas cobranças aconteceram de facto.
 
 class IdempotencyStore {
-  #rows = new Map(); // em produção: uma tabela com UNIQUE(key)
+  #rows = new Map(); // em produção: uma table com UNIQUE(key)
 
   async run(key, body, handler) {
     const hash = crypto.createHash("sha256").update(JSON.stringify(body)).digest("hex");
     const row = this.#rows.get(key);
     if (row) {
-      if (row.hash !== hash) return { status: 422, body: "mesma chave, pedido diferente" };
-      if (row.state === "in_progress") return { status: 409, body: "pedido em curso, tenta mais tarde" };
-      return row.response; // repetição: a MESMA resposta, sem correr outra vez
+      if (row.hash !== hash) return { status: 422, body: "same key, different request" };
+      if (row.state === "in_progress") return { status: 409, body: "request in progress, try again later" };
+      return row.response; // repetição: a MESMA response, sem correr outra vez
     }
     this.#rows.set(key, { hash, state: "in_progress" }); // reservar ANTES do primeiro await = INSERT ... UNIQUE
     try {
@@ -441,33 +441,33 @@ let charges = 0;
 const charge = async () => { await new Promise((r) => setTimeout(r, 5)); return { chargeId: `ch_${++charges}` }; };
 const body = { amount: 1000, currency: "EUR" };
 
-async function idempotenciaConcorrente() {
+async function concurrentIdempotencyDemo() {
   const [a, b] = await Promise.all([store.run("k1", body, charge), store.run("k1", body, charge)]);
 
   // Antes → operação → depois
-  //   pedido   linha "k1" antes   o que faz              resposta
+  //   request  row "k1" antes     o que faz              response
   //   A        não existe         reserva e cobra        201
   //   B        in_progress        não cobra              409
   [a.status, b.status].sort(); // result ==> [201, 409]
   charges; // result ==> 1  (cobrado uma vez)
 }
 
-// Confusão possível: verificar-e-depois-inserir vs reservar — dois pedidos podem passar o "existe?" ao mesmo tempo; só a reserva atómica (UNIQUE) decide um vencedor.
-// Para recordar: reservar a chave antes do efeito.
-// Pergunta: se o segundo pedido usasse a chave "k2", quanto daria charges?
-// Resposta: 2. Chaves diferentes são pedidos diferentes; cada um cobra.
+// Confusão possível: verificar-e-depois-inserir vs reservar — dois requests podem passar o "existe?" ao mesmo tempo; só a reserva atómica (UNIQUE) decide um vencedor.
+// Para recordar: reservar a key antes do efeito.
+// Pergunta: se o segundo request usasse a key "k2", quanto daria charges?
+// Resposta: 2. Keys diferentes são requests diferentes; cada um cobra.
 
 //--------------------------------------------------------------------
-// resposta guardada + hash do pedido — repetir em segurança
-// Para que serve: o cliente perdeu a resposta e repete o pedido "k1"; recebe a mesma resposta, sem nova cobrança.
-// Regra essencial: mesma chave + mesmo corpo → resposta guardada. Mesma chave + corpo diferente → 422.
-// O que guarda: replay = a resposta guardada na primeira vez; o hash do corpo distingue "mesmo pedido" de "pedido diferente".
+// response guardada + hash do request — repetir em segurança
+// Para que serve: o cliente perdeu a response e repete o request "k1"; recebe a mesma response, sem nova cobrança.
+// Regra essencial: mesma key + mesmo body → response guardada. Mesma key + body diferente → 422.
+// O que guarda: replay = a response guardada na primeira vez; o hash do body distingue "mesmo request" de "request diferente".
 
-async function idempotenciaRepeticao() {
+async function replayIdempotencyDemo() {
   const replay = await store.run("k1", body, charge);
 
   // Antes → operação → depois
-  //   pedido               linha "k1" antes   resposta    charges
+  //   request              row "k1" antes     response    charges
   //   k1, €10,00           done               201 ch_1    1
   //   k1, €99,99           done               422         1
   replay; // result ==> { status: 201, body: { chargeId: "ch_1" } }
@@ -475,11 +475,11 @@ async function idempotenciaRepeticao() {
   (await store.run("k1", { amount: 9999, currency: "EUR" }, charge)).status; // result ==> 422
 }
 
-// Confusão possível: 409 vs 422 — 409 = mesmo pedido ainda em curso (tenta mais tarde); 422 = chave reutilizada com outro corpo (erro do cliente).
-// Para recordar: repetição devolve a mesma resposta; corpo diferente é recusado.
-// Avançado: a Stripe guarda também respostas 500; aqui um erro apaga a chave, o que só é seguro se nada foi cobrado.
-// Pergunta: o cliente repete "k1" com { currency: "EUR", amount: 1000 } (mesmos valores, outra ordem). Que recebe aqui?
-// Resposta: 422. JSON.stringify depende da ordem das chaves, por isso o hash muda; em produção normaliza-se o corpo antes do hash.
+// Confusão possível: 409 vs 422 — 409 = mesmo request ainda em curso (tenta mais tarde); 422 = key reutilizada com outro body (erro do cliente).
+// Para recordar: repetição devolve a mesma response; body diferente é recusado.
+// Avançado: a Stripe guarda também responses 500; aqui um erro apaga a key, o que só é seguro se nada foi cobrado.
+// Pergunta: o cliente repete "k1" com { currency: "EUR", amount: 1000 } (mesmos values, outra ordem). Que recebe aqui?
+// Resposta: 422. JSON.stringify depende da ordem das keys, por isso o hash muda; em produção normaliza-se o body antes do hash.
 
 // =====================================================================================
 // §5 ── RETRIES ── (classificar, backoff com jitter, uma camada, resultado desconhecido)
@@ -507,15 +507,15 @@ isRetryable({ status: 402, code: "card_declined" }); // result ==> false
 isRetryable({ status: 400 }); // result ==> false
 
 // Confusão possível: 429 vs 4xx — 429 é 4xx mas é temporário ("estás a pedir demais"); repete-se respeitando Retry-After.
-// Para recordar: repetir só o temporário; uma recusa é uma resposta, não uma falha.
+// Para recordar: repetir só o temporário; uma recusa é uma response, não uma falha.
 // Pergunta: quanto dá isRetryable({ code: "ECONNRESET" })?
-// Resposta: true. A ligação caiu; o pedido pode resultar numa nova tentativa.
+// Resposta: true. A ligação caiu; o request pode resultar numa nova tentativa.
 
 //--------------------------------------------------------------------
 // backoff() — esperar cada vez mais, a um tempo aleatório ("full jitter")
 // Para que serve: 10 000 clientes falham ao mesmo tempo; sem jitter repetiam todos no mesmo milissegundo.
 // Regra essencial: espera = aleatório(0, min(teto, base · 2^tentativa)).
-// O que guarda: attempt = número da tentativa (0, 1, 2…); rand = função que dá um número em [0, 1); base = 100 ms; cap = 5000 ms.
+// O que guarda: attempt = número da tentativa (0, 1, 2…); rand = function que dá um número em [0, 1); base = 100 ms; cap = 5000 ms.
 
 const backoff = (attempt, rand, base = 100, cap = 5000) => Math.floor(rand() * Math.min(cap, base * 2 ** attempt));
 
@@ -537,12 +537,12 @@ backoff(20, () => 0.999); // result ==> 4995  (nunca acima do teto)
 // withRetry() — repetir só o que é temporário, até um limite
 // Para que serve: o PSP dá 503 duas vezes e à terceira responde "ok".
 // Regra essencial: para logo se o erro não for temporário ou se chegou ao máximo de tentativas.
-// O que guarda: attempt = tentativa atual; maxAttempts = limite (4); calls/declines = quantas vezes a função correu.
+// O que guarda: attempt = tentativa atual; maxAttempts = limite (4); calls/declines = quantas vezes a function correu.
 
 async function withRetry(fn, { maxAttempts = 4, sleep = async () => {}, rand = Math.random } = {}) {
   for (let attempt = 0; ; attempt++) {
     try {
-      return await fn(attempt); // sucesso: o return termina o ciclo
+      return await fn(attempt); // sucesso: o return termina o loop
     } catch (err) {
       if (!isRetryable(err) || attempt + 1 >= maxAttempts) throw err;
       await sleep(backoff(attempt, rand));
@@ -566,21 +566,21 @@ async function retryDemo() {
   declines; // result ==> 1  (uma recusa não se repete)
 }
 
-// Confusão possível: maxAttempts vs retries — maxAttempts = 4 são 4 chamadas no total (1 + 3 repetições), não 4 repetições.
+// Confusão possível: maxAttempts vs retries — maxAttempts = 4 são 4 calls no total (1 + 3 repetições), não 4 repetições.
 // Para recordar: temporário → espera e repete; definitivo → falha já.
 // Pergunta: se flaky falhasse sempre com 503, quantas vezes corria?
 // Resposta: 4. À 4.ª falha, attempt + 1 >= 4 e o erro é lançado.
 
 //--------------------------------------------------------------------
 // retries em camadas — porque só se repete numa camada
-// Para que serve: perceber porque um pequeno problema na BD vira uma avalanche.
-// Regra essencial: 3 tentativas em cada uma de 5 camadas multiplicam: 3^5 pedidos chegam à BD.
+// Para que serve: perceber porque um pequeno problema na DB vira uma avalanche.
+// Regra essencial: 3 tentativas em cada uma de 5 camadas multiplicam: 3^5 requests chegam à DB.
 // O que guarda: nada; é a conta da multiplicação.
 
 3 ** 5; // result ==> 243
 
 // Antes → operação → depois
-//   camadas   pedidos à BD por cada pedido do cliente
+//   camadas   requests à DB por cada request do cliente
 //   1         3
 //   2         9
 //   5         243
@@ -588,20 +588,20 @@ async function retryDemo() {
 // Confusão possível: limite por camada vs limite global — 3 por camada parece pouco, mas os limites multiplicam-se. Usar uma camada e um orçamento (retry budget: sem tokens, sem retry).
 // Para recordar: retries aninhados multiplicam a carga.
 // Pergunta: e 2 tentativas em 4 camadas?
-// Resposta: 16. 2^4 = 16 pedidos à BD.
+// Resposta: 16. 2^4 = 16 requests à DB.
 
 //--------------------------------------------------------------------
 // resultado desconhecido — timeout depois de cobrar
-// Para que serve: o PSP cobra a encomenda 42, mas a resposta perde-se num timeout. Não cobrar outra vez.
-// Regra essencial: timeout ≠ falha. Antes de repetir, perguntar "já aconteceu?" e usar a MESMA chave.
-// O que guarda: psp.charges é um Map; chave = chave do pedido ("order-42"); valor = { id, amount } da cobrança.
-//               dropNext = true faz a primeira resposta perder-se.
+// Para que serve: o PSP cobra a encomenda 42, mas a response perde-se num timeout. Não cobrar outra vez.
+// Regra essencial: timeout ≠ falha. Antes de repetir, perguntar "já aconteceu?" e usar a MESMA key.
+// O que guarda: psp.charges é um Map; key = key do request ("order-42"); value = { id, amount } da cobrança.
+//               dropNext = true faz a primeira response perder-se.
 
 async function unknownOutcomeDemo() {
   const psp = { charges: new Map(), dropNext: true };
   psp.charge = async (key, amount) => {
     if (!psp.charges.has(key)) psp.charges.set(key, { id: `ch_${psp.charges.size + 1}`, amount });
-    if (psp.dropNext) { psp.dropNext = false; throw { code: "ETIMEDOUT" }; } // cobrou, mas a resposta perdeu-se
+    if (psp.dropNext) { psp.dropNext = false; throw { code: "ETIMEDOUT" }; } // cobrou, mas a response perdeu-se
     return psp.charges.get(key);
   };
   psp.find = async (key) => psp.charges.get(key) ?? null;
@@ -619,7 +619,7 @@ async function unknownOutcomeDemo() {
 
 // Confusão possível: "deu erro" vs "não sei" — um timeout pode esconder uma cobrança feita. Se não for possível consultar, marcar "unknown" e deixar a reconciliação (§8) decidir.
 // Para recordar: timeout = "ainda não sei", não "falhou".
-// Pergunta: se o retry não chamasse find e o PSP ignorasse a chave, quantas cobranças haveria?
+// Pergunta: se o retry não chamasse find e o PSP ignorasse a key, quantas cobranças haveria?
 // Resposta: 2. A primeira aconteceu mesmo, apesar do timeout, e a segunda seria nova.
 
 // =====================================================================================
@@ -630,37 +630,37 @@ const tick = () => new Promise((r) => setImmediate(r));
 //--------------------------------------------------------------------
 // lost update — ler, esperar, escrever
 // Para que serve: mostrar o bug em que dois levantamentos de €30 de uma conta com €50 passam os dois.
-// Regra essencial: entre ler o saldo e escrevê-lo, outro pedido pode ter mudado o saldo.
-// O que guarda: acc.balance = saldo partilhado; read = a cópia que cada pedido leu.
+// Regra essencial: entre ler o saldo e escrevê-lo, outro request pode ter mudado o saldo.
+// O que guarda: acc.balance = saldo partilhado; read = a cópia que cada request leu.
 
 async function lostUpdateDemo() {
   const acc = { balance: 5000n };
   const naiveWithdraw = async (amt) => {
     const read = acc.balance;
-    await tick(); // o outro "pedido" corre aqui
-    if (read < amt) throw new Error("sem saldo");
+    await tick(); // o outro "request" corre aqui
+    if (read < amt) throw new Error("insufficient funds");
     acc.balance = read - amt;
   };
   await Promise.all([naiveWithdraw(3000n), naiveWithdraw(3000n)]);
 
   // Antes → operação → depois
-  //   passo         pedido A        pedido B        acc.balance
+  //   passo         request A       request B       acc.balance
   //   ler           read = 5000     read = 5000     5000
   //   verificar     5000 ≥ 3000     5000 ≥ 3000     5000
   //   escrever      5000 − 3000     5000 − 3000     2000 (saíram €60, desceu €30)
   acc.balance; // result ==> 2000n  (BUG)
 }
 
-// Confusão possível: verificar no código vs verificar na BD — o if no código vê um valor velho; a BD vê o valor atual (UPDATE ... WHERE balance >= 3000).
+// Confusão possível: verificar no código vs verificar na DB — o if no código vê um value velho; a DB vê o value atual (UPDATE ... WHERE balance >= 3000).
 // Para recordar: nunca ler → verificar → escrever sem proteção.
 // Pergunta: com 3 levantamentos de €30 em simultâneo, quanto daria acc.balance?
 // Resposta: 2000n. Os três leem 5000 e todos escrevem 5000 − 3000; saem €90 e o saldo só desce €30.
 
 //--------------------------------------------------------------------
-// lock otimista (version) — escrever só se ninguém mudou a linha
+// lock otimista (version) — escrever só se ninguém mudou a row
 // Para que serve: corrigir o bug anterior: dos dois levantamentos de €30, só um passa.
-// Regra essencial: UPDATE ... WHERE version = $lida. 0 linhas alteradas = conflito → ler outra vez e decidir de novo.
-// O que guarda: row = { balance, version }; compareAndSet devolve false se a versão mudou (= 0 linhas alteradas).
+// Regra essencial: UPDATE ... WHERE version = $lida. 0 rows alteradas = conflito → ler outra vez e decidir de novo.
+// O que guarda: row = { balance, version }; compareAndSet devolve false se a versão mudou (= 0 rows alteradas).
 
 async function optimisticLockDemo() {
   const row = { balance: 5000n, version: 0 };
@@ -682,23 +682,23 @@ async function optimisticLockDemo() {
   // Antes → operação → depois
   //   passo                       A                   B                        row
   //   ler                         5000, v0            5000, v0                 5000, v0
-  //   escrever (WHERE v = 0)      ok                  0 linhas → reler         2000, v1
+  //   escrever (WHERE v = 0)      ok                  0 rows → reler          2000, v1
   //   reler e verificar           —                   2000 < 3000 → declined   2000, v1
   results.sort(); // result ==> ["declined", "ok"]
   row.balance; // result ==> 2000n
   row.version; // result ==> 1
 }
 
-// Confusão possível: lock otimista vs FOR UPDATE — o otimista não bloqueia e repete em conflito (bom se os conflitos são raros); FOR UPDATE bloqueia a linha (bom se muitos pedidos batem na mesma conta).
-// Para recordar: a BD é o árbitro; a versão diz se alguém chegou primeiro.
+// Confusão possível: lock otimista vs FOR UPDATE — o otimista não bloqueia e repete em conflito (bom se os conflitos são raros); FOR UPDATE bloqueia a row (bom se muitos requests batem na mesma conta).
+// Para recordar: a DB é o árbitro; a versão diz se alguém chegou primeiro.
 // Pergunta: se os dois levantamentos fossem de €20, quanto daria row.balance?
 // Resposta: 1000n. B falha a primeira escrita, relê 3000 (v1), 3000 ≥ 2000, escreve 1000 (v2). Os dois passam.
 
 //--------------------------------------------------------------------
 // Correr os exemplos assíncronos por ordem (fora da resposta escondida do último bloco).
 (async () => {
-  await idempotenciaConcorrente();
-  await idempotenciaRepeticao();
+  await concurrentIdempotencyDemo();
+  await replayIdempotencyDemo();
   await retryDemo();
   await unknownOutcomeDemo();
   await lostUpdateDemo();

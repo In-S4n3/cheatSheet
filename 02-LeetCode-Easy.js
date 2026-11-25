@@ -5,13 +5,13 @@
 //   §0 COMO ATACAR UM PROBLEMA
 //   §1 ARMADILHAS DE JS QUE CHUMBAM TESTES
 //   §2 HASH MAP / SET
-//   §3 DOIS PONTEIROS
-//   §4 JANELA DESLIZANTE
-//   §5 SOMA DE PREFIXOS / KADANE
-//   §6 PESQUISA BINÁRIA
-//   §7 PILHA
-//   §8 LISTA LIGADA
-//   §9 ÁRVORES BINÁRIAS
+//   §3 TWO POINTERS
+//   §4 SLIDING WINDOW
+//   §5 PREFIX SUM / KADANE
+//   §6 BINARY SEARCH
+//   §7 STACK
+//   §8 LINKED LIST
+//   §9 BINARY TREES
 //   §10 MATEMÁTICA / BITS
 //   §11 LISTA DE TREINO
 
@@ -20,24 +20,24 @@
 // 2. Resolver à mão no papel. O que os olhos fizeram é o algoritmo.
 // 3. Escrever primeiro a força bruta (dois for). Depois perguntar:
 //      procuro a mesma coisa vezes sem conta?        → Map/Set (§2)
-//      o array está ordenado?                        → dois ponteiros (§3) ou pesquisa binária (§6)
-//      um pedaço seguido do array/string?            → janela deslizante (§4) ou soma de prefixos (§5)
-//      parênteses, desfazer, "o mais recente"?       → pilha (§7)
-//      head e .next?                                 → ponteiros prev/slow/fast (§8)
-//      root, .left e .right?                         → recursão (§9)
+//      o array está ordenado?                        → two pointers (§3) ou binary search (§6)
+//      um pedaço seguido do array/string?            → sliding window (§4) ou prefix sum (§5)
+//      parênteses, desfazer, "o mais recente"?       → stack (§7)
+//      head e .next?                                 → pointers prev/slow/fast (§8)
+//      root, .left e .right?                         → recursion (§9)
 // 4. Testar os meus casos antes de submeter.
-// 5. Velocidade (Big O): O(1) arr[i], map.get · O(log n) pesquisa binária · O(n) um ciclo · O(n log n) sort · O(n²) ciclo dentro de ciclo.
-// Nota: includes(), indexOf(), shift(), splice() são O(n) — dentro de um ciclo tornam tudo O(n²).
+// 5. Velocidade (Big O): O(1) arr[i], map.get · O(log n) binary search · O(n) um loop · O(n log n) sort · O(n²) loop dentro de loop.
+// Nota: includes(), indexOf(), shift(), splice() são O(n) — dentro de um loop tornam tudo O(n²).
 
 // §1 ── ARMADILHAS DE JS QUE CHUMBAM TESTES ──────────
 
 
 //--------------------------------------------------------------------
-// sort() - // serve para pôr [10, 1, 2] do menor para o maior antes de usar dois ponteiros.
+// sort() - // serve para pôr [10, 1, 2] do menor para o maior antes de usar two pointers.
 {
-  // sem função, o sort compara como TEXTO: "10" vem antes de "2".
+  // sem function, o sort compara como STRING: "10" vem antes de "2".
   [10, 1, 2].sort(); // result ==> [1, 10, 2]
-  // a função devolve um número: negativo = a fica antes, positivo = b fica antes.
+  // a function devolve um número: negativo = a fica antes, positivo = b fica antes.
   [10, 1, 2].sort((a, b) => a - b); // result ==> [1, 2, 10]
   [10, 1, 2].sort((a, b) => b - a); // result ==> [10, 2, 1]
   [5, 25, 100].sort(); // result ==> [100, 25, 5]
@@ -47,10 +47,10 @@
   sorted; // result ==> [1, 2, 3]
 }
 // nota: sort() altera o original e devolve o mesmo array; toSorted() deixa o original e devolve uma cópia.
-// nota2: [5, 25, 100].sort() dá [100, 25, 5] porque "1" < "2" < "5" como texto. Ver 01 §11 e §16.
+// nota2: [5, 25, 100].sort() dá [100, 25, 5] porque "1" < "2" < "5" como string. Ver 01 §11 e §16.
 
 //--------------------------------------------------------------------
-// Math.floor() - // serve para calcular o índice do meio, Math.floor((left + right) / 2), na pesquisa binária.
+// Math.floor() - // serve para calcular o index do meio, Math.floor((left + right) / 2), na binary search.
 {
   7 / 2; // result ==> 3.5
   Math.floor(7 / 2); // result ==> 3
@@ -84,12 +84,12 @@
   first === second; // result ==> true
 }
 // nota: arrays comparam a referência ("é o mesmo?"), não o conteúdo ("é igual?"). second aponta para o mesmo array que first.
-// nota2: para comparar o conteúdo, faz join() aos dois e compara o texto. Ver 01 §3, §7 e §15.
+// nota2: para comparar o conteúdo, faz join() aos dois e compara a string. Ver 01 §3, §7 e §15.
 
 //--------------------------------------------------------------------
-// Infinity - // serve para encontrar o mínimo de [5, 3, 8] sem saber de antemão os valores.
+// Infinity - // serve para encontrar o mínimo de [5, 3, 8] sem saber de antemão os values.
 {
-  // passo 1 — esqueleto: o valor inicial, o ciclo e o resultado
+  // passo 1 — esqueleto: o value inicial, o loop e o resultado
   let smallest = Infinity;
   for (const number of [5, 3, 8]) {
     // passo 2 — guardar o menor visto até agora
@@ -107,7 +107,7 @@
 // nota2: ver Infinity e Math.min em 01 §8, for...of em 01 §6.
 
 //--------------------------------------------------------------------
-// Array.from() - // serve para criar uma grelha 2 × 3 de zeros para programação dinâmica.
+// Array.from() - // serve para criar uma grid 2 × 3 de zeros para dynamic programming.
 {
   const matrix = Array.from({ length: 2 }, () => new Array(3).fill(0));
   matrix[0][0] = 1;
@@ -120,11 +120,11 @@
   bad; // result ==> [[1], [1]]
   bad[0] === bad[1]; // result ==> true
 }
-// nota: Array.from chama a função uma vez por linha, por isso cada linha é um array NOVO. fill([]) põe o MESMO [] nas duas posições.
+// nota: Array.from chama a function uma vez por row, por isso cada row é um array NOVO. fill([]) põe o MESMO [] nas duas posições.
 // nota2: fill(0) não dá problema (um número é copiado); fill([]) partilha o array. Ver 01 §9.
 
 //--------------------------------------------------------------------
-// at(-1) - // serve para ler o último elemento, por exemplo o topo de uma pilha, sem a alterar.
+// at(-1) - // serve para ler o último elemento, por exemplo o topo de uma stack, sem a alterar.
 {
   [1, 2, 3].at(0); // result ==> 1
   [1, 2, 3].at(-1); // result ==> 3
@@ -132,7 +132,7 @@
   [1, 2, 3][-1]; // result ==> undefined
   "abc".at(-1); // result ==> "c"
 }
-// nota: índices negativos contam do fim. arr[-1] procura uma propriedade "-1" e dá undefined.
+// nota: indexes negativos contam do fim. arr[-1] procura uma propriedade "-1" e dá undefined.
 // nota2: at() funciona em arrays e em strings. Ver 01 §10 e §7.
 
 //--------------------------------------------------------------------
@@ -143,7 +143,7 @@
   "c".charCodeAt(0) - "a".charCodeAt(0); // result ==> 2
   "z".charCodeAt(0) - "a".charCodeAt(0); // result ==> 25
 }
-// nota: posição = código da letra − código de "a". O 0 é o índice da letra dentro da string; para uma letra é sempre 0.
+// nota: posição = código da letra − código de "a". O 0 é o index da letra dentro da string; para uma letra é sempre 0.
 // nota2: ver 01 §7.
 
 //--------------------------------------------------------------------
@@ -151,7 +151,7 @@
 {
   String(1234).split("").map(Number); // result ==> [1, 2, 3, 4]
 
-  // passo 1 — esqueleto: o número, a soma e o ciclo
+  // passo 1 — esqueleto: o número, a soma e o loop
   let number = 1234;
   let digitSum = 0;
   while (number > 0) {
@@ -174,7 +174,7 @@
 // Contar com um Map - // serve para responder "já vi isto?" ou "quantas vezes aparece cada letra?".
 // count fica fora do bloco porque o isAnagram e o firstUniqChar também a usam.
 function count(items) {
-  // passo 1 — esqueleto: o Map, o ciclo e o return
+  // passo 1 — esqueleto: o Map, o loop e o return
   const freq = new Map();
   for (const item of items) {
     // passo 2 — ler a contagem anterior (0 se ainda não existe)
@@ -194,22 +194,22 @@ function count(items) {
   count("banana").get("z"); // result ==> undefined
 }
 // nota: o Map não soma sozinho: lê o anterior, soma 1 e guarda com set(). Cada get/set é O(1). Versão curta: freq.set(item, (freq.get(item) ?? 0) + 1).
-// nota2: o Map aceita qualquer tipo de chave e tem .size; num objeto {} as chaves viram texto. Ver 01 §14.
+// nota2: o Map aceita qualquer tipo de key e tem .size; num object {} as keys viram string. Ver 01 §14.
 
 //--------------------------------------------------------------------
 // Two Sum (LC 1) - // serve para encontrar o par de [2, 7, 11, 15] que soma 9 sem testar todos os pares.
 {
   function twoSum(nums, target) {
-    // passo 1 — esqueleto: o Map, o ciclo e o return
+    // passo 1 — esqueleto: o Map, o loop e o return
     const seen = new Map();
     for (let index = 0; index < nums.length; index++) {
       // passo 2 — o complemento que falta para chegar ao target
       const needed = target - nums[index];
-      // passo 3 — o complemento já passou? Devolve os dois índices
+      // passo 3 — o complemento já passou? Devolve os dois indexes
       if (seen.has(needed)) {
         return [seen.get(needed), index];
       }
-      // passo 4 — guardar o número (chave) e o índice (valor), só DEPOIS de perguntar
+      // passo 4 — guardar o número (key) e o index (value), só DEPOIS de perguntar
       seen.set(nums[index], index);
     }
     // nenhum par existe
@@ -219,8 +219,8 @@ function count(items) {
   twoSum([3, 3], 6); // result ==> [0, 1]
   twoSum([3, 2, 4], 6); // result ==> [1, 2]
 }
-// nota: a chave é o VALOR (é por ele que procuramos) e o índice é o que se guarda. Guardar só depois evita usar o mesmo número duas vezes.
-// nota2: em [3, 2, 4] com target 6: em index 0 o Map está vazio; em index 2 precisa de 2, que está no índice 1.
+// nota: a key é o VALUE (é por ele que procuramos) e o index é o que se guarda. Guardar só depois evita usar o mesmo número duas vezes.
+// nota2: em [3, 2, 4] com target 6: em index 0 o Map está vazio; em index 2 precisa de 2, que está no index 1.
 
 //--------------------------------------------------------------------
 // Contains Duplicate (LC 217) - // serve para saber se [1, 2, 3, 1] tem repetidos.
@@ -269,13 +269,13 @@ function count(items) {
 // nota2: sem o passo 2, "ab" e "abc" teriam de ser comparados letra a letra. Ver 01 §14.
 
 //--------------------------------------------------------------------
-// First Unique Character (LC 387) - // serve para devolver o índice da primeira letra que aparece uma só vez.
+// First Unique Character (LC 387) - // serve para devolver o index da primeira letra que aparece uma só vez.
 {
   function firstUniqChar(s) {
     // passo 1 — esqueleto: contar tudo, depois andar pela ordem original
     const freq = count(s);
     for (let index = 0; index < s.length; index++) {
-      // passo 2 — esta letra aparece uma só vez? Devolve o índice
+      // passo 2 — esta letra aparece uma só vez? Devolve o index
       if (freq.get(s[index]) === 1) {
         return index;
       }
@@ -295,28 +295,28 @@ function count(items) {
 // Group Anagrams (LC 49) - // serve para juntar ["eat", "tea", "tan", "nat"] em [["eat", "tea"], ["tan", "nat"]].
 {
   function groupAnagrams(words) {
-    // passo 1 — esqueleto: o Map de grupos, o ciclo e o return
+    // passo 1 — esqueleto: o Map de grupos, o loop e o return
     const groups = new Map();
     for (const word of words) {
-      // passo 2 — a chave: as letras da palavra, ordenadas
+      // passo 2 — a key: as letras da palavra, ordenadas
       const letters = word.split("");
       letters.sort();
       const key = letters.join("");
-      // passo 3 — chave nova: criar o grupo vazio
+      // passo 3 — key nova: criar o grupo vazio
       if (!groups.has(key)) {
         groups.set(key, []);
       }
       // passo 4 — pôr a palavra no grupo
       groups.get(key).push(word);
     }
-    // só os grupos, sem as chaves
+    // só os grupos, sem as keys
     return [...groups.values()];
   }
   groupAnagrams(["eat", "tea", "tan", "nat"]); // result ==> [["eat", "tea"], ["tan", "nat"]]
   ["n", "a", "t"].sort().join(""); // result ==> "ant"
 }
-// nota: groups.get(key).push(word) não precisa de set(): o push altera o array que já está guardado no Map. Versão curta da chave: [...word].sort().join("").
-// nota2: aqui o sort sem função está certo, porque ordenamos letras (texto). Ver 01 §11, §13 e §14.
+// nota: groups.get(key).push(word) não precisa de set(): o push altera o array que já está guardado no Map. Versão curta da key: [...word].sort().join("").
+// nota2: aqui o sort sem function está certo, porque ordenamos letras (string). Ver 01 §11, §13 e §14.
 
 //--------------------------------------------------------------------
 // Roman to Integer (LC 13) - // serve para converter "MCMXCIV" em 1994.
@@ -324,12 +324,12 @@ function count(items) {
   const VALUE = new Map([["I", 1], ["V", 5], ["X", 10], ["L", 50], ["C", 100], ["D", 500], ["M", 1000]]);
 
   function romanToInt(s) {
-    // passo 1 — esqueleto: o total, o ciclo e o return
+    // passo 1 — esqueleto: o total, o loop e o return
     let total = 0;
     for (let index = 0; index < s.length; index++) {
-      // passo 2 — o valor desta letra
+      // passo 2 — o value desta letra
       const current = VALUE.get(s[index]);
-      // passo 3 — o valor da seguinte (0 se esta for a última)
+      // passo 3 — o value da seguinte (0 se esta for a última)
       let next = 0;
       if (index + 1 < s.length) {
         next = VALUE.get(s[index + 1]);
@@ -361,10 +361,10 @@ function count(items) {
     [50, "L"], [40, "XL"], [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]];
 
   function intToRoman(num) {
-    // passo 1 — esqueleto: o romano a construir, o ciclo pela tabela e o return
+    // passo 1 — esqueleto: o romano a construir, o loop pela tabela e o return
     let result = "";
     for (const [value, symbol] of TABLE) {
-      // passo 2 — enquanto o valor cabe, usa-o outra vez
+      // passo 2 — enquanto o value cabe, usa-o outra vez
       while (num >= value) {
         result += symbol;
         num -= value;
@@ -380,10 +380,10 @@ function count(items) {
 // nota: guloso: maior que cabe, repete, desce. Sem 900/400/90/40/9/4 na tabela, 4 sairia "IIII" em vez de "IV".
 // nota2: 44 → 40 cabe ("XL"), falta 4; 4 cabe ("IV").
 
-// §3 ── DOIS PONTEIROS ──────────
+// §3 ── TWO POINTERS ──────────
 
 //--------------------------------------------------------------------
-// Dois ponteiros - // serve para percorrer um array ordenado, um palíndromo, ou alterá-lo no sítio sem cópia.
+// Two pointers - // serve para percorrer um array ordenado, um palíndromo, ou alterá-lo no sítio sem cópia.
 {
   // forma 1 — pontas opostas: left no início, right no fim, aproximam-se até se cruzarem
   const array = [1, 2, 3, 4, 5];
@@ -408,14 +408,14 @@ function count(items) {
   }
   numbers.slice(0, write); // result ==> [2, 4]
 }
-// nota: while (left < right) deixa o elemento do meio em paz (o 3 nunca aparece). <= é da pesquisa binária (§6). Num array de 4 elementos corre 2 vezes: (0, 3) e (1, 2).
+// nota: while (left < right) deixa o elemento do meio em paz (o 3 nunca aparece). <= é da binary search (§6). Num array de 4 elementos corre 2 vezes: (0, 3) e (1, 2).
 // nota2: pontas opostas fecham (palíndromo, inverter); read/write andam juntos (remover repetidos, zeros).
 
 //--------------------------------------------------------------------
 // Valid Palindrome (LC 125) - // serve para saber se "A man, a plan, a canal: Panama" se lê igual nos dois sentidos.
 {
   function isPalindrome(s) {
-    // passo 1 — esqueleto: limpar, os dois ponteiros, o ciclo e o return
+    // passo 1 — esqueleto: limpar, os dois pointers, o loop e o return
     const lower = s.toLowerCase();
     const clean = lower.replace(/[^a-z0-9]/g, "");
     let left = 0;
@@ -442,11 +442,11 @@ function count(items) {
 // Reverse String (LC 344) - // serve para inverter ["h", "e", "l", "l", "o"] no sítio, quando o enunciado proíbe outro array.
 {
   function reverseString(chars) {
-    // passo 1 — esqueleto: os dois ponteiros, o ciclo e o return
+    // passo 1 — esqueleto: os dois pointers, o loop e o return
     let left = 0;
     let right = chars.length - 1;
     while (left < right) {
-      // passo 2 — trocar as pontas, com uma variável temporária
+      // passo 2 — trocar as pontas, com uma variable temporária
       const temporary = chars[left];
       chars[left] = chars[right];
       chars[right] = temporary;
@@ -468,7 +468,7 @@ function count(items) {
 // Remove Duplicates from Sorted Array (LC 26) - // serve para compactar [0, 0, 1, 1, 1, 2, 2, 3] sem array extra.
 {
   function removeDuplicates(nums) {
-    // passo 1 — esqueleto: write, o ciclo de read e o return
+    // passo 1 — esqueleto: write, o loop de read e o return
     if (nums.length === 0) {
       return 0;
     }
@@ -487,14 +487,14 @@ function count(items) {
   dups.slice(0, 4); // result ==> [0, 1, 2, 3]
   removeDuplicates([1, 1, 1]); // result ==> 1
 }
-// nota: devolve um número (quantos únicos); o array muda no sítio e o que fica depois do índice 3 é lixo. Ver 01 §6 e §10.
-// nota2: read lê tudo, write só escreve novidades. Em [1, 1, 1] o read nunca encontra um valor diferente.
+// nota: devolve um número (quantos únicos); o array muda no sítio e o que fica depois do index 3 é lixo. Ver 01 §6 e §10.
+// nota2: read lê tudo, write só escreve novidades. Em [1, 1, 1] o read nunca encontra um value diferente.
 
 //--------------------------------------------------------------------
 // Move Zeroes (LC 283) - // serve para levar os 0 de [0, 1, 0, 3, 12] para o fim, mantendo a ordem dos outros.
 {
   function moveZeroes(nums) {
-    // passo 1 — esqueleto: write, o ciclo e o return
+    // passo 1 — esqueleto: write, o loop e o return
     let write = 0;
     for (let read = 0; read < nums.length; read++) {
       // passo 2 — não é zero: copiar para a frente e avançar write
@@ -523,7 +523,7 @@ function count(items) {
 // Merge Sorted Array (LC 88) - // serve para juntar dois arrays ordenados dentro do primeiro, que tem zeros livres no fim.
 {
   function merge(nums1, m, nums2, n) {
-    // passo 1 — esqueleto: três índices, o ciclo e o return
+    // passo 1 — esqueleto: três indexes, o loop e o return
     let i = m - 1; // último real de nums1
     let j = n - 1; // último de nums2
     let k = m + n - 1; // posição onde escrever
@@ -550,27 +550,27 @@ function count(items) {
   nums1; // result ==> [1, 2, 2, 3, 5, 6]
   nums1[2]; // result ==> 2
 }
-// nota: enche-se de TRÁS para a frente com o maior, por isso nada por ler é apagado. Na 4.ª volta (i = 1, j = 0, k = 2) vai o 2 de nums2, porque nums1[1] = 2 não é > 2.
+// nota: enche-se de TRÁS para a frente com o maior, por isso nada por ler é apagado. Na 4.ª iteration (i = 1, j = 0, k = 2) vai o 2 de nums2, porque nums1[1] = 2 não é > 2.
 // nota2: while (j >= 0) chega: quando nums2 acaba, o que resta de nums1 já está no sítio certo. Ver 01 §6.
 
-// §4 ── JANELA DESLIZANTE ──────────
+// §4 ── SLIDING WINDOW ──────────
 
 //--------------------------------------------------------------------
-// Janela deslizante - // serve para achar o pedaço seguido mais longo ou mais curto de um array ou string.
+// Sliding window - // serve para achar o pedaço seguido mais longo ou mais curto de um array ou string.
 //   passo 1 — esqueleto:        let left = 0;  for (let right = 0; right < s.length; right++) { ... }
-//   passo 2 — juntar à direita: right avança sempre, uma vez por volta
-//   passo 3 — encolher:         while (janela inválida) { left = left + 1; }
+//   passo 2 — juntar à direita: right avança sempre, uma vez por iteration
+//   passo 3 — encolher:         while (window inválida) { left = left + 1; }
 //   passo 4 — medir:            tamanho = right - left + 1
-// left é o início da janela, right é o fim. Com left = 2 e right = 5 a janela tem os índices 2, 3, 4 e 5.
+// left é o início da window, right é o fim. Com left = 2 e right = 5 a window tem os indexes 2, 3, 4 e 5.
 const windowLeft = 2;
 const windowRight = 5;
 windowRight - windowLeft + 1; // result ==> 4
-// nota: não é "dois ponteiros de pontas opostas" - aqui left e right andam os dois para a direita.
+// nota: não é "two pointers de pontas opostas" - aqui left e right andam os dois para a direita.
 
 //--------------------------------------------------------------------
 // Best Time to Buy and Sell Stock (LC 121) - // serve para saber o melhor lucro a comprar num dia e vender num dia seguinte.
 function maxProfit(prices) {
-  // passo 1 — esqueleto: o preço mais baixo, o melhor lucro e um ciclo pelos dias
+  // passo 1 — esqueleto: o preço mais baixo, o melhor lucro e um loop pelos dias
   let lowest = Infinity;
   let best = 0;
   for (const price of prices) {
@@ -590,13 +590,13 @@ function maxProfit(prices) {
 maxProfit([7, 1, 5, 3, 6, 4]); // result ==> 5  (compra a 1, vende a 6)
 maxProfit([7, 6, 4, 3, 1]); // result ==> 0  (só desce)
 maxProfit([2, 4, 1]); // result ==> 2  (o 1 vem depois e já não tem dia para vender)
-// nota: não há left a encolher, só "o mais barato até agora"; fica aqui porque também varre a lista uma vez.
+// nota: não há left a encolher, só "o mais barato até agora"; fica aqui porque também varre o array uma vez.
 // nota2: com Math.min e Math.max cada if fica numa linha: lowest = Math.min(lowest, price).
 
 //--------------------------------------------------------------------
-// Janela fixa de tamanho k - // serve para achar a melhor soma de k números seguidos, como o maior total de 4 dias.
+// Window fixa de tamanho k - // serve para achar a melhor soma de k números seguidos, como o maior total de 4 dias.
 function maxSumK(nums, k) {
-  // passo 1 — esqueleto: somar a primeira janela, depois deslizar uma casa de cada vez
+  // passo 1 — esqueleto: somar a primeira window, depois deslizar uma casa de cada vez
   let sum = 0;
   for (let i = 0; i < k; i++) {
     sum = sum + nums[i];
@@ -620,9 +620,9 @@ maxSumK([1, 2, 3], 2); // result ==> 5  (1 + 2 = 3, depois 3 + 3 - 1 = 5)
 // nota: não somar tudo outra vez; entra um, sai um. nums[i - k] sai; nums[i - k + 1] ainda está dentro.
 
 //--------------------------------------------------------------------
-// Longest Substring Without Repeating Characters (LC 3) - // serve para achar o maior pedaço sem letras repetidas, o molde da janela de tamanho variável.
+// Longest Substring Without Repeating Characters (LC 3) - // serve para achar o maior pedaço sem letras repetidas, o molde da window de tamanho variável.
 function lengthOfLongestSubstring(s) {
-  // passo 1 — esqueleto: as letras da janela, o início, o melhor tamanho e um ciclo pelo fim
+  // passo 1 — esqueleto: as letras da window, o início, o melhor tamanho e um loop pelo fim
   const inWindow = new Set();
   let left = 0;
   let best = 0;
@@ -634,7 +634,7 @@ function lengthOfLongestSubstring(s) {
     }
     // passo 3 — juntar a letra nova
     inWindow.add(s[right]);
-    // passo 4 — é a maior janela até agora?
+    // passo 4 — é a maior window até agora?
     const size = right - left + 1;
     if (size > best) {
       best = size;
@@ -649,15 +649,15 @@ lengthOfLongestSubstring("abba"); // result ==> 2  (com "if" em vez de "while" d
 // nota: tem de ser while, não if - em "abba" é preciso tirar várias letras até sair a repetida.
 // nota2: compacto: while (inWindow.has(s[right])) inWindow.delete(s[left++]);
 
-// §5 ── SOMA DE PREFIXOS / KADANE ──────────
+// §5 ── PREFIX SUM / KADANE ──────────
 
 //--------------------------------------------------------------------
-// Soma de prefixos - // serve para responder muitas vezes "quanto soma de l a r?" no mesmo array, sem somar tudo de novo.
+// Prefix sum - // serve para responder muitas vezes "quanto soma de l a r?" no mesmo array, sem somar tudo de novo.
 function prefixSums(nums) {
-  // passo 1 — esqueleto: a lista começa com um 0 à frente, depois um ciclo pelos números
+  // passo 1 — esqueleto: o array começa com um 0 à frente, depois um loop pelos números
   const p = [0];
   for (const n of nums) {
-    // passo 2 — a soma até agora é o último valor da lista
+    // passo 2 — a soma até agora é o último value do array
     const last = p[p.length - 1];
     // passo 3 — acrescentar a soma nova
     p.push(last + n);
@@ -666,8 +666,8 @@ function prefixSums(nums) {
 }
 const P = prefixSums([1, 2, 3, 4]);
 P; // result ==> [0, 1, 3, 6, 10]
-P[3] - P[1]; // result ==> 5  (soma dos índices 1 a 2: 2 + 3)
-P[4] - P[0]; // result ==> 10  (soma dos índices 0 a 3)
+P[3] - P[1]; // result ==> 5  (soma dos indexes 1 a 2: 2 + 3)
+P[4] - P[0]; // result ==> 10  (soma dos indexes 0 a 3)
 // nota: por causa do 0 à frente, a soma de l a r é P[r + 1] - P[l], não P[r] - P[l].
 // nota2: compacto: p.push(p.at(-1) + n).
 
@@ -682,12 +682,12 @@ function runningSum(nums) {
 }
 runningSum([1, 2, 3, 4]); // result ==> [1, 3, 6, 10]
 runningSum([5]); // result ==> [5]  (prefixSums dá [0, 5] e slice(1) tira o 0)
-// nota: slice(1) devolve uma cópia a partir do índice 1; splice(1) cortaria o array original.
+// nota: slice(1) devolve uma cópia a partir do index 1; splice(1) cortaria o array original.
 
 //--------------------------------------------------------------------
 // Maximum Subarray, Kadane (LC 53) - // serve para achar a maior soma de números seguidos, como o melhor pedaço de [-2, 1, -3, 4, -1, 2, 1, -5, 4].
 function maxSubArray(nums) {
-  // passo 1 — esqueleto: o pedaço que acaba aqui, o melhor de todos, e um ciclo a partir do 2.º número
+  // passo 1 — esqueleto: o pedaço que acaba aqui, o melhor de todos, e um loop a partir do 2.º número
   let current = nums[0];
   let best = nums[0];
   for (let i = 1; i < nums.length; i++) {
@@ -712,12 +712,12 @@ maxSubArray([2, -1, 2]); // result ==> 3  (continuar compensa: 2, depois 1, depo
 // nota: começar com 0 em vez de nums[0] daria 0 num array só de negativos, que não é a soma de nenhum pedaço.
 // nota2: compacto: current = Math.max(nums[i], current + nums[i]).
 
-// §6 ── PESQUISA BINÁRIA ──────────
+// §6 ── BINARY SEARCH ──────────
 
 //--------------------------------------------------------------------
 // Binary Search (LC 704) - // serve para encontrar um número num array ORDENADO em O(log n).
 function binarySearch(nums, target) {
-  // passo 1 — esqueleto: os limites do que ainda é possível e um ciclo enquanto sobrar intervalo
+  // passo 1 — esqueleto: os limites do que ainda é possível e um loop enquanto sobrar intervalo
   let left = 0;
   let right = nums.length - 1;
   while (left <= right) {
@@ -746,7 +746,7 @@ binarySearch([-1, 0, 3, 5, 9, 12], 2); // result ==> -1  (não existe)
 //--------------------------------------------------------------------
 // Search Insert Position (LC 35) - // serve para saber onde entraria um número num array ordenado sem estragar a ordem.
 function searchInsert(nums, target) {
-  // passo 1 — esqueleto: a mesma pesquisa binária
+  // passo 1 — esqueleto: a mesma binary search
   let left = 0;
   let right = nums.length - 1;
   while (left <= right) {
@@ -764,7 +764,7 @@ function searchInsert(nums, target) {
       right = mid - 1;
     }
   }
-  // passo 5 — não achou: left é o primeiro índice com valor maior que target
+  // passo 5 — não achou: left é o primeiro index com value maior que target
   return left;
 }
 searchInsert([1, 3, 5, 6], 2); // result ==> 1  (entre o 1 e o 3)
@@ -772,24 +772,24 @@ searchInsert([1, 3, 5, 6], 7); // result ==> 4  (no fim)
 searchInsert([1, 3, 5, 6], 0); // result ==> 0  (tudo é maior; right desce a -1 e left fica em 0)
 // nota: no fim right = left - 1; right aponta para o último menor, left para onde o target entra.
 
-// §7 ── PILHA ──────────
+// §7 ── STACK ──────────
 
 //--------------------------------------------------------------------
-// Pilha - // serve para parênteses, desfazer e tudo onde "o último a entrar é o primeiro a sair".
+// Stack - // serve para parênteses, desfazer e tudo onde "o último a entrar é o primeiro a sair".
 const st = [];
 st.push(1); // result ==> 1  (push devolve o novo length)
 st.push(2); // result ==> 2
 st.at(-1); // result ==> 2  (espreita o topo, não tira)
 st.pop(); // result ==> 2
 st; // result ==> [1]
-[].pop(); // result ==> undefined  (pilha vazia não tem topo e não dá erro)
-// nota: pilha é um array simples, o fim é o topo: push e pop no fim são O(1).
-// nota2: shift() tira do início (fila) e é O(n); pop() tira do fim (pilha).
+[].pop(); // result ==> undefined  (stack vazia não tem topo e não dá erro)
+// nota: a stack é um array simples, o fim é o topo: push e pop no fim são O(1).
+// nota2: shift() tira do início (queue) e é O(n); pop() tira do fim (stack).
 
 //--------------------------------------------------------------------
 // Valid Parentheses (LC 20) - // serve para saber se todos os parênteses fecham pela ordem certa: "()[]{}" é válido, "([)]" não.
 function isValid(s) {
-  // passo 1 — esqueleto: a tabela fecho → abertura, a pilha das aberturas por fechar e um ciclo pelas letras
+  // passo 1 — esqueleto: a tabela fecho → abertura, a stack das aberturas por fechar e um loop pelas letras
   const pair = { ")": "(", "]": "[", "}": "{" };
   const stack = [];
   for (const ch of s) {
@@ -800,32 +800,32 @@ function isValid(s) {
         return false;
       }
     }
-    // passo 3 — é uma abertura: empilhar
+    // passo 3 — é uma abertura: fazer push
     if (!(ch in pair)) {
       stack.push(ch);
     }
   }
-  // passo 4 — no fim a pilha tem de estar vazia
+  // passo 4 — no fim a stack tem de estar vazia
   return stack.length === 0;
 }
 isValid("()[]{}"); // result ==> true
 isValid("([)]"); // result ==> false  (ordem errada: ")" encontra "[" no topo)
 isValid("(("); // result ==> false  (sobrou abertura sem fecho)
-isValid(")"); // result ==> false  (pop() da pilha vazia dá undefined, que não é "(")
-// nota: "ch in pair" pergunta se a CHAVE existe; aqui só os fechos são chaves.
-// nota2: fila com push() + shift() funciona, mas shift() é O(n); se der Time Limit, andar com um índice.
+isValid(")"); // result ==> false  (pop() da stack vazia dá undefined, que não é "(")
+// nota: "ch in pair" pergunta se a KEY existe; aqui só os fechos são keys.
+// nota2: uma queue com push() + shift() funciona, mas shift() é O(n); se der Time Limit, andar com um index.
 
-// §8 ── LISTA LIGADA ──────────
+// §8 ── LINKED LIST ──────────
 
 //--------------------------------------------------------------------
-// Lista ligada - // serve para quando o LeetCode dá `head` e pede para mudar as setas .next; só se chega a um nó pelo anterior.
+// Linked list - // serve para quando o LeetCode dá `head` e pede para mudar as setas .next; só se chega a um node pelo anterior.
 class ListNode {
   constructor(val, next = null) {
     this.val = val;
     this.next = next;
   }
 }
-// ajudante para testar: array → lista, a começar pelo fim (o último aponta para null)
+// helper para testar: array → linked list, a começar pelo fim (o último aponta para null)
 function toList(arr) {
   let list = null;
   for (let i = arr.length - 1; i >= 0; i--) {
@@ -833,7 +833,7 @@ function toList(arr) {
   }
   return list;
 }
-// ajudante para testar: lista → array
+// helper para testar: linked list → array
 function toArray(head) {
   const out = [];
   let node = head;
@@ -844,18 +844,18 @@ function toArray(head) {
   return out;
 }
 toArray(toList([1, 2, 3])); // result ==> [1, 2, 3]
-toList([7]).next; // result ==> null  (o único nó é também o último)
-// nota: cada nó tem val e next (null no último). Perder a referência ao resto é perder o resto - desenhar as setas primeiro.
-// nota2: compacto: arr.reduceRight((next, val) => new ListNode(val, next), null); reduceRight começa no fim, que é o que a lista precisa.
+toList([7]).next; // result ==> null  (o único node é também o último)
+// nota: cada node tem val e next (null no último). Perder a referência ao resto é perder o resto - desenhar as setas primeiro.
+// nota2: compacto: arr.reduceRight((next, val) => new ListNode(val, next), null); reduceRight começa no fim, que é o que a linked list precisa.
 
 //--------------------------------------------------------------------
-// Reverse Linked List (LC 206) - // serve para virar a lista ao contrário: 1 → 2 → 3 passa a 3 → 2 → 1.
+// Reverse Linked List (LC 206) - // serve para virar a linked list ao contrário: 1 → 2 → 3 passa a 3 → 2 → 1.
 function reverseList(head) {
-  // passo 1 — esqueleto: prev é a parte já virada, current é o nó a virar
+  // passo 1 — esqueleto: prev é a parte já virada, current é o node a virar
   let prev = null;
   let current = head;
   while (current !== null) {
-    // passo 2 — guardar o resto da lista
+    // passo 2 — guardar o resto da linked list
     const next = current.next;
     // passo 3 — virar a seta para trás
     current.next = prev;
@@ -871,9 +871,9 @@ reverseList(null); // result ==> null  (o while não corre e devolve prev)
 // nota: no fim current é null; devolver prev, não current.
 
 //--------------------------------------------------------------------
-// Merge Two Sorted Lists (LC 21) - // serve para juntar duas listas ordenadas numa só: [1, 2, 4] + [1, 3, 4] dá [1, 1, 2, 3, 4, 4].
+// Merge Two Sorted Lists (LC 21) - // serve para juntar duas linked lists ordenadas numa só: [1, 2, 4] + [1, 3, 4] dá [1, 1, 2, 3, 4, 4].
 function mergeTwoLists(first, second) {
-  // passo 1 — esqueleto: um nó falso à frente, tail é o último nó da resposta
+  // passo 1 — esqueleto: um node falso à frente, tail é o último node da resposta
   const dummy = new ListNode(0);
   let tail = dummy;
   while (first !== null && second !== null) {
@@ -897,18 +897,18 @@ function mergeTwoLists(first, second) {
   if (second !== null) {
     tail.next = second;
   }
-  // salta o nó falso
+  // salta o node falso
   return dummy.next;
 }
 toArray(mergeTwoLists(toList([1, 2, 4]), toList([1, 3, 4]))); // result ==> [1, 1, 2, 3, 4, 4]
 toArray(mergeTwoLists(null, toList([5]))); // result ==> [5]  (o while não corre; sobra só o segundo)
-// nota: o dummy evita o caso especial "a lista nova ainda está vazia"; devolver dummy.next, não dummy.
+// nota: o dummy evita o caso especial "a linked list nova ainda está vazia"; devolver dummy.next, não dummy.
 // nota2: compacto: tail.next = first ?? second pendura o resto sem os dois if.
 
 //--------------------------------------------------------------------
-// Middle of the Linked List (LC 876) - // serve para achar o nó do meio numa só passagem.
+// Middle of the Linked List (LC 876) - // serve para achar o node do meio numa só passagem.
 function middleNode(head) {
-  // passo 1 — esqueleto: dois corredores, ambos a começar na cabeça
+  // passo 1 — esqueleto: dois corredores, ambos a começar na head
   let slow = head;
   let fast = head;
   // passo 2 — enquanto o rápido tem dois passos para dar
@@ -925,7 +925,7 @@ middleNode(toList([1, 2, 3, 4])).val; // result ==> 3  (com número par fica o s
 // nota: a condição precisa dos dois, fast e fast.next; fast.next.next rebenta se um deles for null.
 
 //--------------------------------------------------------------------
-// Linked List Cycle (LC 141) - // serve para saber se a lista dá voltas para sempre, sem guardar os nós visitados.
+// Linked List Cycle (LC 141) - // serve para saber se a linked list tem um cycle, sem guardar os nodes visitados.
 function hasCycle(head) {
   // passo 1 — esqueleto: o mesmo slow e fast
   let slow = head;
@@ -933,12 +933,12 @@ function hasCycle(head) {
   while (fast !== null && fast.next !== null) {
     slow = slow.next;
     fast = fast.next.next;
-    // passo 2 — encontraram-se no mesmo nó: há ciclo
+    // passo 2 — encontraram-se no mesmo node: há cycle
     if (slow === fast) {
       return true;
     }
   }
-  // passo 3 — o rápido chegou ao fim (null): não há ciclo
+  // passo 3 — o rápido chegou ao fim (null): não há cycle
   return false;
 }
 const cycle = toList([1, 2, 3]);
@@ -946,12 +946,12 @@ cycle.next.next.next = cycle; // o 3 aponta de volta para o 1
 hasCycle(cycle); // result ==> true
 hasCycle(toList([1, 2])); // result ==> false
 hasCycle(null); // result ==> false  (fast é null, o while não corre)
-// nota: slow === fast compara o NÓ (a referência), não o valor; dois nós com val 1 diferentes não contam.
+// nota: slow === fast compara o NODE (a referência), não o value; dois nodes com val 1 diferentes não contam.
 
-// §9 ── ÁRVORES BINÁRIAS ──────────
+// §9 ── BINARY TREES ──────────
 
 //--------------------------------------------------------------------
-// Árvore binária - // serve para quando o LeetCode dá `root`, com .left e .right; quase tudo é recursão.
+// Binary tree - // serve para quando o LeetCode dá `root`, com .left e .right; quase tudo é recursion.
 class TreeNode {
   constructor(val, left = null, right = null) {
     this.val = val;
@@ -966,12 +966,12 @@ class TreeNode {
 //        15   7
 const tree = new TreeNode(3, new TreeNode(9), new TreeNode(20, new TreeNode(15), new TreeNode(7)));
 tree.right.left.val; // result ==> 15
-tree.left.right; // result ==> null  (o 9 é folha, não tem filho direito)
-// nota: a receita é sempre a mesma: 1. se o nó é null, devolve a resposta vazia; 2. confiar que left e right já funcionam; 3. combinar.
-// nota2: folha é um nó sem filhos; null é a ausência de nó (o caso base).
+tree.left.right; // result ==> null  (o 9 é leaf, não tem right child)
+// nota: a receita é sempre a mesma: 1. se o node é null, devolve a resposta vazia; 2. confiar que left e right já funcionam; 3. combinar.
+// nota2: leaf é um node sem children; null é a ausência de node (o base case).
 
 //--------------------------------------------------------------------
-// Maximum Depth (LC 104) - // serve para saber quantos níveis tem a árvore.
+// Maximum Depth (LC 104) - // serve para saber quantos levels tem a tree.
 function maxDepth(node) {
   // passo 1 — esqueleto: chegou ao fim (null), vale 0
   if (node === null) {
@@ -981,24 +981,24 @@ function maxDepth(node) {
   const leftDepth = maxDepth(node.left);
   // passo 3 — lado direito
   const rightDepth = maxDepth(node.right);
-  // passo 4 — este nó (1) + o lado mais fundo
+  // passo 4 — este node (1) + o lado mais fundo
   return 1 + Math.max(leftDepth, rightDepth);
 }
 maxDepth(tree); // result ==> 3
-maxDepth(new TreeNode(1, new TreeNode(2))); // result ==> 2  (o nó 2 dá 1, o lado direito dá 0)
-maxDepth(new TreeNode(1)); // result ==> 1  (conta nós, não arestas)
+maxDepth(new TreeNode(1, new TreeNode(2))); // result ==> 2  (o node 2 dá 1, o lado direito dá 0)
+maxDepth(new TreeNode(1)); // result ==> 1  (conta nodes, não edges)
 // nota: compacto: const maxDepth = (node) => (node ? 1 + Math.max(maxDepth(node.left), maxDepth(node.right)) : 0);
 
 //--------------------------------------------------------------------
-// Invert Binary Tree (LC 226) - // serve para espelhar a árvore, trocando esquerda e direita em todos os nós.
+// Invert Binary Tree (LC 226) - // serve para espelhar a tree, trocando left e right em todos os nodes.
 function invertTree(node) {
   // passo 1 — esqueleto: chegou ao fim (null)
   if (node === null) {
     return null;
   }
-  // passo 2 — lado esquerdo: inverter o filho
+  // passo 2 — lado esquerdo: inverter o child
   const invertedLeft = invertTree(node.left);
-  // passo 3 — lado direito: inverter o filho
+  // passo 3 — lado direito: inverter o child
   const invertedRight = invertTree(node.right);
   // passo 4 — trocar os dois
   node.left = invertedRight;
@@ -1008,12 +1008,12 @@ function invertTree(node) {
 const small = new TreeNode(1, new TreeNode(2), new TreeNode(3));
 invertTree(small);
 small.left.val; // result ==> 3
-small.val; // result ==> 1  (a raiz não muda de valor; só os filhos trocam)
+small.val; // result ==> 1  (a root não muda de value; só os children trocam)
 // nota: node.left = invertTree(node.right) seguido de node.right = invertTree(node.left) está ERRADO - o segundo já lê o left novo. Guardar primeiro.
 // nota2: compacto: [node.left, node.right] = [invertTree(node.right), invertTree(node.left)].
 
 //--------------------------------------------------------------------
-// Same Tree (LC 100) - // serve para saber se duas árvores são iguais, na forma e nos valores, nó a nó.
+// Same Tree (LC 100) - // serve para saber se duas trees são iguais, na forma e nos values, node a node.
 function isSameTree(p, q) {
   // passo 1 — esqueleto: os dois chegaram ao fim (null)
   if (p === null && q === null) {
@@ -1023,7 +1023,7 @@ function isSameTree(p, q) {
   if (p === null || q === null) {
     return false;
   }
-  // passo 3 — valores diferentes
+  // passo 3 — values diferentes
   if (p.val !== q.val) {
     return false;
   }
@@ -1034,20 +1034,20 @@ function isSameTree(p, q) {
   return sameLeft && sameRight;
 }
 isSameTree(invertTree(invertTree(tree)), tree); // result ==> true  (inverter duas vezes devolve a original)
-isSameTree(new TreeNode(1), new TreeNode(1)); // result ==> true  (valores iguais e os quatro filhos são null)
+isSameTree(new TreeNode(1), new TreeNode(1)); // result ==> true  (values iguais e os quatro children são null)
 isSameTree(null, new TreeNode(1)); // result ==> false
-// nota: p === q em nós compara referências; aqui só se usava quando pelo menos um era null, por isso os if explícitos.
+// nota: p === q em nodes compara referências; aqui só se usava quando pelo menos um era null, por isso os if explícitos.
 
 //--------------------------------------------------------------------
-// Path Sum (LC 112) - // serve para saber se algum caminho da raiz a uma folha soma target: 3 + 20 + 7 = 30.
+// Path Sum (LC 112) - // serve para saber se algum caminho da root a uma leaf soma target: 3 + 20 + 7 = 30.
 function hasPathSum(node, target) {
   // passo 1 — esqueleto: chegou ao fim (null), não é caminho
   if (node === null) {
     return false;
   }
-  // passo 2 — o que falta somar abaixo deste nó
+  // passo 2 — o que falta somar abaixo deste node
   const rest = target - node.val;
-  // passo 3 — é folha: tem de faltar exatamente 0
+  // passo 3 — é leaf: tem de faltar exatamente 0
   if (node.left === null && node.right === null) {
     return rest === 0;
   }
@@ -1063,11 +1063,11 @@ function hasPathSum(node, target) {
 }
 hasPathSum(tree, 30); // result ==> true  (3 + 20 + 7)
 hasPathSum(tree, 5); // result ==> false
-hasPathSum(tree, 12); // result ==> true  (3 + 9 = 12 e o 9 é folha)
-// nota: parar na folha, não no null - o caminho tem de acabar numa folha; um null sozinho devolve false.
+hasPathSum(tree, 12); // result ==> true  (3 + 9 = 12 e o 9 é leaf)
+// nota: parar na leaf, não no null - o caminho tem de acabar numa leaf; um null sozinho devolve false.
 
 //--------------------------------------------------------------------
-// Inorder Traversal (LC 94) - // serve para visitar todos os nós e listar os valores pela ordem esquerda, nó, direita (DFS).
+// Inorder Traversal (LC 94) - // serve para visitar todos os nodes e listar os values pela ordem left, node, right (DFS).
 function inorder(node, out = []) {
   // passo 1 — esqueleto: chegou ao fim (null)
   if (node === null) {
@@ -1075,13 +1075,13 @@ function inorder(node, out = []) {
   }
   // passo 2 — lado esquerdo: tudo o que está à esquerda
   inorder(node.left, out);
-  // passo 3 — este nó
+  // passo 3 — este node
   out.push(node.val);
   // passo 4 — lado direito: tudo o que está à direita
   inorder(node.right, out);
   return out;
 }
-// preorder: o mesmo código, com o push antes dos filhos
+// preorder: o mesmo código, com o push antes dos children
 function preorder(node, out = []) {
   if (node === null) {
     return out;
@@ -1092,21 +1092,21 @@ function preorder(node, out = []) {
   return out;
 }
 inorder(tree); // result ==> [9, 3, 15, 20, 7]
-preorder(tree); // result ==> [3, 9, 20, 15, 7]  (cada nó entra antes dos filhos)
-// nota: só muda ONDE está o push: pre = push, esq, dir · in = esq, push, dir · post = esq, dir, push. Inorder numa BST dá os valores ordenados.
-// nota2: out = [] por omissão cria um array novo em cada chamada SEM out; as chamadas recursivas passam o mesmo out.
+preorder(tree); // result ==> [3, 9, 20, 15, 7]  (cada node entra antes dos children)
+// nota: só muda ONDE está o push: pre = push, left, right · in = left, push, right · post = left, right, push. Inorder numa BST dá os values ordenados.
+// nota2: out = [] por omissão cria um array novo em cada call SEM out; as recursive calls passam o mesmo out.
 
 //--------------------------------------------------------------------
-// Level Order (LC 102) - // serve para ler a árvore nível a nível (BFS): [[3], [9, 20], [15, 7]].
+// Level Order (LC 102) - // serve para ler a tree level a level (BFS): [[3], [9, 20], [15, 7]].
 function levelOrder(root) {
-  // passo 1 — esqueleto: a fila começa na raiz, um ciclo enquanto houver nós por visitar
+  // passo 1 — esqueleto: a queue começa na root, um loop enquanto houver nodes por visitar
   if (root === null) {
     return [];
   }
   const levels = [];
   const queue = [root];
   while (queue.length > 0) {
-    // passo 2 — fixar o tamanho ANTES de juntar filhos: o que está na fila agora é um nível
+    // passo 2 — fixar o tamanho ANTES de juntar children: o que está na queue agora é um level
     const size = queue.length;
     const level = [];
     for (let i = 0; i < size; i++) {
@@ -1126,10 +1126,10 @@ function levelOrder(root) {
   return levels;
 }
 levelOrder(tree); // result ==> [[3], [9, 20], [15, 7]]
-levelOrder(new TreeNode(1, null, new TreeNode(2))); // result ==> [[1], [2]]  (o nó 1 só tem filho direito)
+levelOrder(new TreeNode(1, null, new TreeNode(2))); // result ==> [[1], [2]]  (o node 1 só tem right child)
 levelOrder(null); // result ==> []
-// nota: size fica fixo no nível atual; queue.length cresce enquanto se juntam filhos. É medium, mas muitos easy usam isto.
-// nota2: shift() é O(n); com um índice que avança fica O(1).
+// nota: size fica fixo no level atual; queue.length cresce enquanto se juntam children. É medium, mas muitos easy usam isto.
+// nota2: shift() é O(n); com um index que avança fica O(1).
 
 // §10 ── MATEMÁTICA / BITS ──────────
 
@@ -1175,7 +1175,7 @@ function isPalindromeNumber(x) {
   if (x < 0) {
     return false;
   }
-  // guardar o original, porque x vai ser gasto no ciclo
+  // guardar o original, porque x vai ser gasto no loop
   const original = x;
   let reversed = 0;
   while (x > 0) {
@@ -1213,7 +1213,7 @@ isPowerOfTwo(0); // result ==> false  (0 & -1 dá 0, mas n <= 0 falha primeiro)
 // nota: n & (n - 1) diz "potência de 2"; % 2 diz "par ou ímpar".
 
 //--------------------------------------------------------------------
-// Climbing Stairs (LC 70) - // serve para contar de quantas maneiras se sobe n degraus, 1 ou 2 de cada vez (a primeira programação dinâmica).
+// Climbing Stairs (LC 70) - // serve para contar de quantas maneiras se sobe n degraus, 1 ou 2 de cada vez (a primeira dynamic programming).
 function climbStairs(n) {
   // passo 1 — esqueleto: as maneiras de chegar aos dois degraus de trás (degrau 0 e degrau 1)
   let twoBack = 1;
@@ -1221,7 +1221,7 @@ function climbStairs(n) {
   for (let step = 2; step <= n; step++) {
     // passo 2 — degrau novo = os dois anteriores somados (Fibonacci)
     const current = twoBack + oneBack;
-    // passo 3 — avançar a janela
+    // passo 3 — avançar a window
     twoBack = oneBack;
     oneBack = current;
   }
@@ -1237,12 +1237,12 @@ climbStairs(3); // result ==> 3  (1+1+1, 1+2 e 2+1)
 // Por esta ordem. Tentar cada um sozinho 20 min antes de olhar para cima.
 //   Hash map:        1 Two Sum · 217 · 242 · 387 · 383 Ransom Note · 349 Intersection of Two Arrays
 //   Romanos:         13 Roman to Integer · 12 Integer to Roman (dizem que saiu na Thought Machine)
-//   Dois ponteiros:  125 · 344 · 26 · 283 · 88 · 977 Squares of a Sorted Array
-//   Janela/prefixo:  121 · 1480 · 643 Maximum Average Subarray I · 53
-//   Pesquisa binária: 704 · 35 · 278 First Bad Version
-//   Pilha:           20 · 232 Implement Queue using Stacks · 1047 Remove All Adjacent Duplicates
-//   Lista ligada:    206 · 21 · 876 · 141 · 83 Remove Duplicates from Sorted List
-//   Árvores:         104 · 226 · 100 · 112 · 101 Symmetric Tree · 94 Inorder Traversal
+//   Two pointers:    125 · 344 · 26 · 283 · 88 · 977 Squares of a Sorted Array
+//   Window/prefix:   121 · 1480 · 643 Maximum Average Subarray I · 53
+//   Binary search:   704 · 35 · 278 First Bad Version
+//   Stack:           20 · 232 Implement Queue using Stacks · 1047 Remove All Adjacent Duplicates
+//   Linked list:     206 · 21 · 876 · 141 · 83 Remove Duplicates from Sorted List
+//   Trees:           104 · 226 · 100 · 112 · 101 Symmetric Tree · 94 Inorder Traversal
 //   Matemática/bits: 136 · 268 · 9 · 70 · 191 Number of 1 Bits
 
 console.log("✅ Easy OK");

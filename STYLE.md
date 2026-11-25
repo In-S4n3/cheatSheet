@@ -1,7 +1,7 @@
 # Como cada conceito é explicado
 
 O padrão é o do meu cheat sheet original (`git show c12a85a:JS-CheatSheet.js`).
-Português de Portugal, palavras do dia a dia. Uma ideia por bloco.
+As explicações ficam em português de Portugal, com palavras do dia a dia. Os termos técnicos e o código ficam em inglês: loop, array, function, key, index, stack, queue, row, col. Uma ideia por bloco.
 
 ## Forma de cada bloco
 
@@ -21,7 +21,7 @@ expressao; // result ==> valor
 - Não há secções com etiqueta, como "Para que serve", "Regra essencial", "Confusão possível", "Pergunta" ou "Resposta".
 - O exemplo usa dados reais e pequenos. Primeiro o código, depois o resultado.
 - Cada `// result ==> valor` é verdadeiro e verificado por `node check-results.js`.
-- Ciclos e `console.log`: mostra o que aparece no ecrã, linha a linha, num `/* */` a seguir a `// result ==>`.
+- Loops e `console.log`: mostra o que aparece no ecrã, linha a linha, num `/* */` a seguir a `// result ==>`.
 - Sintaxe nova: escreve os nomes das partes por cima do código, como fiz no for:
   ```js
   //      PARTIDA     CHEGADA          INCREMENTO
@@ -38,29 +38,27 @@ expressao; // result ==> valor
 //--------------------------------------------------------------------
 // break com label - // serve para sair dos dois loops de uma vez, quando já encontrei o que procurava.
 {
-  const grelha = [
+  const grid = [
     [1, 2],
     [3, 4],
     [5, 6],
   ];
-  //i = linhas
-  //j = colunas
-  const vistos = [];
-  procura: for (let i = 0; i < grelha.length; i++) {
-    for (let j = 0; j < grelha[i].length; j++) {
-      vistos.push(`linha ${i}, coluna ${j} => ${grelha[i][j]}`);
-      if (grelha[i][j] === 4) break procura;
+  const seen = [];
+  search: for (let row = 0; row < grid.length; row++) {
+    for (let col = 0; col < grid[row].length; col++) {
+      seen.push(`row ${row}, col ${col} => ${grid[row][col]}`);
+      if (grid[row][col] === 4) break search;
     }
   }
-  vistos.length; // result ==> 4
-  /* linha 0, coluna 0 => 1
-     linha 0, coluna 1 => 2
-     linha 1, coluna 0 => 3
-     linha 1, coluna 1 => 4     <- parou aqui, o 5 e o 6 nunca aparecem */
-  grelha[1][0]; // result ==> 3
+  seen.length; // result ==> 4
+  /* row 0, col 0 => 1
+     row 0, col 1 => 2
+     row 1, col 0 => 3
+     row 1, col 1 => 4     <- parou aqui, o 5 e o 6 nunca aparecem */
+  grid[1][0]; // result ==> 3
 }
-// nota: com "break" sem nome, só sai o loop de dentro e o de fora continua, por isso aparecem o 5 e o 6.
-// nota2: grelha[1][0] → primeiro a linha, depois a coluna.
+// nota: com "break" sem label, só sai o loop de dentro e o de fora continua, por isso aparecem o 5 e o 6.
+// nota2: grid[1][0] → primeiro a row, depois a col.
 ```
 
 ## Algoritmos: construir por camadas

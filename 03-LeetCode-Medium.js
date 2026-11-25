@@ -3,24 +3,24 @@
 // Verificar cada "// result ==>": node check-results.js 03-LeetCode-Medium.js
 // Antes deste: 02-LeetCode-Easy.js (Map, Set, sort com (a, b) => a - b).
 // Peças básicas de JS (Map, Set, sort, ??, …): 01-JS-Fundamentals.js (01) e 02-LeetCode-Easy.js (02).
-// Formato de cada bloco: STYLE.md (nome - serve para → código com dados reais → result ==> valor → no máximo duas notas; algoritmos por camadas, passo 1, passo 2, …).
+// Formato de cada bloco: STYLE.md (nome - serve para → código com dados reais → result ==> value → no máximo duas notas; algoritmos por camadas, passo 1, passo 2, …).
 
 /*
   ÍNDICE (Ctrl+F "§N ──")
     §1  Como atacar um médio numa entrevista
     §2  Hash map avançado (prefix sum, agrupar, sequências, top K)
-    §3  Dois ponteiros (3Sum, Container With Most Water)
-    §4  Janela deslizante variável com Map
-    §5  Pilha monótona + pilha
-    §6  Pesquisa binária avançada (array rodado, pesquisa binária na resposta)
+    §3  Two pointers (3Sum, Container With Most Water)
+    §4  Sliding window variável com Map
+    §5  Monotonic stack + stack
+    §6  Binary search avançada (array rodado, binary search na resposta)
     §7  Intervalos
-    §8  Matriz / grelha (DFS, BFS com várias origens)
-    §9  Grafos (lista de adjacência, ordenação topológica)
+    §8  Matrix / grid (DFS, BFS com várias origens)
+    §9  Graphs (adjacency list, topological sort)
     §10 Backtracking
     §11 Heap (MinHeap escrito à mão)
-    §12 Programação dinâmica
-    §13 Listas ligadas (médio)
-    §14 Árvores (médio)
+    §12 Dynamic programming
+    §13 Linked lists (médio)
+    §14 Trees (médio)
     §15 Tabela final: sinal → padrão + que Big-O o n permite
     §16 Plano de 7 dias
 */
@@ -29,7 +29,7 @@
 // §1 ── COMO ATACAR UM MÉDIO NUMA ENTREVISTA ──────────
 // =====================================================================================
 // Avaliam como pensas, não só a resposta. Fala o tempo todo.
-//   1. Pergunta: vazio? 1 elemento? repetidos? negativos? ordenado? índices ou valores? qual o tamanho de n?
+//   1. Pergunta: vazio? 1 elemento? repetidos? negativos? ordenado? indexes ou values? qual o tamanho de n?
 //   2. Resolve o exemplo à mão, em voz alta.
 //   3. Diz primeiro a solução lenta ("dois for, O(n²)"). Não precisas de a escrever.
 //   4. Torna-a mais rápida: "o que estou a repetir?" → um Map/Set. Ou: "ordenar torna isto fácil?"
@@ -46,8 +46,8 @@ Math.abs(0.1 + 0.2 - 0.3) < Number.EPSILON; // result ==> true  (a diferença é
 Number.MAX_SAFE_INTEGER; // result ==> 9007199254740991
 "Ab".toLowerCase() === "ab"; // result ==> true
 0.1 * 3 === 0.3; // result ==> false  (0.1 * 3 dá 0.30000000000000004, o mesmo erro de arredondamento)
-// nota: os decimais são aproximações binárias; compara a diferença com um valor pequeno. Os inteiros são exatos até 2^53 - 1 (MAX_SAFE_INTEGER).
-// nota2: Number.EPSILON só serve para números perto de 1; para valores grandes usa uma tolerância relativa. Divisão inteira: Math.floor ou Math.trunc.
+// nota: os decimais são aproximações binárias; compara a diferença com um número pequeno. Os inteiros são exatos até 2^53 - 1 (MAX_SAFE_INTEGER).
+// nota2: Number.EPSILON só serve para números perto de 1; para números grandes usa uma tolerância relativa. Divisão inteira: Math.floor ou Math.trunc.
 
 // =====================================================================================
 // §2 ── HASH MAP AVANÇADO ──────────
@@ -58,30 +58,30 @@ Number.MAX_SAFE_INTEGER; // result ==> 9007199254740991
 // Subarray Sum Equals K (LC 560) - // serve para contar quantos pedaços seguidos de [1, 2, 3] somam k = 3, mesmo com negativos.
 
 function subarraySum(nums, k) {
-  // passo 1 — esqueleto: o contador, o ciclo principal e o return
+  // passo 1 — esqueleto: o counter, o loop principal e o return
   let total = 0;
 
-  // passo 2 — o prefixo é a soma de tudo até agora
+  // passo 2 — o prefix é a soma de tudo até agora
   let prefix = 0;
 
-  // passo 3 — seen: chave = prefixo já visto, valor = quantas vezes apareceu
-  // o prefixo 0 existe uma vez: permite pedaços que começam no índice 0
+  // passo 3 — seen: key = prefix já visto, value = quantas vezes apareceu
+  // o prefix 0 existe uma vez: permite pedaços que começam no index 0
   const seen = new Map();
   seen.set(0, 1);
 
   for (const num of nums) {
-    // o prefixo ganha o número novo
+    // o prefix ganha o número novo
     prefix = prefix + num;
 
-    // passo 4 — que prefixo anterior deixaria um pedaço de soma k?
+    // passo 4 — que prefix anterior deixaria um pedaço de soma k?
     const wanted = prefix - k;
 
-    // já vi esse prefixo? cada vez que apareceu é um pedaço que termina aqui
+    // já vi esse prefix? cada vez que apareceu é um pedaço que termina aqui
     if (seen.has(wanted)) {
       total = total + seen.get(wanted);
     }
 
-    // passo 5 — só agora guardo o prefixo atual (procurar ANTES de guardar)
+    // passo 5 — só agora guardo o prefix atual (procurar ANTES de guardar)
     if (seen.has(prefix)) {
       seen.set(prefix, seen.get(prefix) + 1);
     } else {
@@ -97,43 +97,43 @@ subarraySum([1, 1, 1], 2); // result ==> 2  ([1,1] duas vezes)
 subarraySum([1, -1, 0], 0); // result ==> 3  (negativos e zero)
 subarraySum([], 0); // result ==> 0
 subarraySum([5], 5); // result ==> 1
-subarraySum([2, 2], 2); // result ==> 2  (prefixos 2 e 4: o 2 encontra o 0 inicial, o 4 encontra o 2)
-// nota: soma(i..j) = prefixo(j) - prefixo(i-1). O(n) tempo e espaço. A janela deslizante só serve com números positivos; com negativos usa prefix sum + Map.
-// nota2: em [1, 2, 3] com k = 3: prefixos 1, 3, 6. No 3 procura 0 (existe, conta [1,2]); no 6 procura 3 (existe, conta [3]).
+subarraySum([2, 2], 2); // result ==> 2  (prefixes 2 e 4: o 2 encontra o 0 inicial, o 4 encontra o 2)
+// nota: soma(i..j) = prefix(j) - prefix(i-1). O(n) tempo e espaço. A sliding window só serve com números positivos; com negativos usa prefix sum + Map.
+// nota2: em [1, 2, 3] com k = 3: prefixes 1, 3, 6. No 3 procura 0 (existe, conta [1,2]); no 6 procura 3 (existe, conta [3]).
 
 //--------------------------------------------------------------------
 // Group Anagrams (LC 49) - // serve para juntar ["eat", "tea", "tan"] em [["eat", "tea"], ["tan"]].
 
 function groupAnagrams(strs) {
-  // passo 1 — esqueleto: o Map dos grupos, o ciclo e o return
-  // groups: chave = letras da palavra ordenadas ("aet"), valor = lista das palavras com essas letras
+  // passo 1 — esqueleto: o Map dos grupos, o loop e o return
+  // groups: key = letras da palavra ordenadas ("aet"), value = array das palavras com essas letras
   const groups = new Map();
 
   for (const word of strs) {
-    // passo 2 — a chave: "eat" vira ["e","a","t"], ordena, junta em "aet"
+    // passo 2 — a key: "eat" vira ["e","a","t"], ordena, junta em "aet"
     const letters = [...word];
     letters.sort();
     const key = letters.join("");
 
-    // passo 3 — chave nova? cria a lista vazia
+    // passo 3 — key nova? cria o array vazio
     if (groups.has(key) === false) {
       groups.set(key, []);
     }
 
-    // a palavra entra no grupo da sua chave
+    // a palavra entra no grupo da sua key
     groups.get(key).push(word);
   }
 
-  // só os arrays, sem as chaves
+  // só os arrays, sem as keys
   return [...groups.values()];
 }
 
 groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]).map((group) => group.toSorted()).toSorted(); // result ==> [["ate", "eat", "tea"], ["bat"], ["nat", "tan"]]
 groupAnagrams([""]); // result ==> [[""]]
 groupAnagrams([]); // result ==> []
-groupAnagrams(["ab", "ba", "abc"]).length; // result ==> 2  ("ab" e "ba" têm a chave "ab"; "abc" tem a sua)
+groupAnagrams(["ab", "ba", "abc"]).length; // result ==> 2  ("ab" e "ba" têm a key "ab"; "abc" tem a sua)
 // nota: o LeetCode aceita qualquer ordem; os exemplos usam toSorted() (uma cópia ordenada) para o resultado ser sempre igual. O(n · L log L), L = tamanho da palavra.
-// nota2: get().push() muda o array que já está no Map, por isso não é preciso voltar a fazer set(). Versão compacta da chave: [...word].sort().join("").
+// nota2: get().push() muda o array que já está no Map, por isso não é preciso voltar a fazer set(). Versão compacta da key: [...word].sort().join("").
 
 //--------------------------------------------------------------------
 // Longest Consecutive Sequence (LC 128) - // serve para achar 1,2,3,4 em [100, 4, 200, 1, 3, 2] sem ordenar.
@@ -176,8 +176,8 @@ longestConsecutive([5, 6, 8]); // result ==> 2  (5,6; o 8 fica sozinho porque fa
 // Top K Frequent Elements (LC 347) - // serve para achar os k números que aparecem mais: em [1,1,1,2,2,3] com k = 2, devolve [1, 2].
 
 function topKFrequent(nums, k) {
-  // passo 1 — esqueleto: contar, pôr em baldes, ler os baldes, return
-  // freq: chave = número, valor = quantas vezes aparece
+  // passo 1 — esqueleto: contar, pôr em buckets, ler os buckets, return
+  // freq: key = número, value = quantas vezes aparece
   const freq = new Map();
   for (const num of nums) {
     if (freq.has(num)) {
@@ -187,14 +187,14 @@ function topKFrequent(nums, k) {
     }
   }
 
-  // passo 2 — baldes: o ÍNDICE é a frequência, o valor é a lista dos números com ela
+  // passo 2 — buckets: o INDEX é a frequência, o value é o array dos números com ela
   // a frequência máxima possível é nums.length, por isso o array tem nums.length + 1 posições
   const buckets = Array.from({ length: nums.length + 1 }, () => []);
   for (const [num, count] of freq) {
     buckets[count].push(num);
   }
 
-  // passo 3 — lê do balde maior para o menor até ter k números
+  // passo 3 — lê do bucket maior para o menor até ter k números
   const result = [];
   for (let count = buckets.length - 1; count >= 0 && result.length < k; count--) {
     for (const num of buckets[count]) {
@@ -210,19 +210,19 @@ function topKFrequent(nums, k) {
 topKFrequent([1, 1, 1, 2, 2, 3], 2).toSorted((a, b) => a - b); // result ==> [1, 2]
 topKFrequent([1], 1); // result ==> [1]
 topKFrequent([-1, -1, 4, 4, 4, 7], 2).toSorted((a, b) => a - b); // result ==> [-1, 4]
-topKFrequent([4, 4, 5], 1); // result ==> [4]  (o 4 está no balde 2, o 5 no balde 1; lê-se primeiro o balde 2)
+topKFrequent([4, 4, 5], 1); // result ==> [4]  (o 4 está no bucket 2, o 5 no bucket 1; lê-se primeiro o bucket 2)
 // nota: O(n). Na entrevista também serve [...freq].sort((a, b) => b[1] - a[1]).slice(0, k), em O(n log n).
-// nota2: buckets[count] usa a frequência como índice, não o número; por isso o array vai até nums.length.
+// nota2: buckets[count] usa a frequência como index, não o número; por isso o array vai até nums.length.
 
 // =====================================================================================
-// §3 ── DOIS PONTEIROS ──────────
+// §3 ── TWO POINTERS ──────────
 // =====================================================================================
 // Usar quando o enunciado diz: "array ordenado", "par/trio que soma X", "sem repetidos no resultado", "maior área entre dois"
 // Molde: começa nas duas pontas e anda para o meio.
 //   let left = 0, right = arr.length - 1;
 //   while (left < right) {
 //     if (condição cumprida) { guardar; left++; right--; }
-//     else if (preciso de mais) left++;   // num array ordenado, subir left aumenta o valor
+//     else if (preciso de mais) left++;   // num array ordenado, subir left aumenta o value
 //     else right--;
 //   }
 
@@ -239,14 +239,14 @@ function threeSum(nums) {
     const isRepeated = i > 0 && sorted[i] === sorted[i - 1];
 
     if (isRepeated === false) {
-      // passo 3 — dois ponteiros à procura do 2.º e do 3.º número
+      // passo 3 — two pointers à procura do 2.º e do 3.º número
       let left = i + 1;
       let right = sorted.length - 1;
 
       while (left < right) {
         const sum = sorted[i] + sorted[left] + sorted[right];
 
-        // soma certa: guarda o trio e fecha os dois ponteiros
+        // soma certa: guarda o trio e fecha os two pointers
         if (sum === 0) {
           triplets.push([sorted[i], sorted[left], sorted[right]]);
           left++;
@@ -276,7 +276,7 @@ threeSum([-1, 0, 1, 2, -1, -4]); // result ==> [[-1, -1, 2], [-1, 0, 1]]
 threeSum([0, 0, 0, 0]); // result ==> [[0, 0, 0]]  (repetidos, um só trio)
 threeSum([0, 1, 1]); // result ==> []
 threeSum([]); // result ==> []
-threeSum([-2, 0, 1, 1, 2]); // result ==> [[-2, 0, 2], [-2, 1, 1]]  (com -2, os ponteiros acham 0+2 e depois 1+1)
+threeSum([-2, 0, 1, 1, 2]); // result ==> [[-2, 0, 2], [-2, 1, 1]]  (com -2, os pointers acham 0+2 e depois 1+1)
 // nota: O(n²) tempo. Compara com i - 1, não com i + 1: com i + 1 saltavas o 1.º -1 e perdias [-1,-1,2]; com i - 1 usas o 1.º e só saltas os seguintes.
 // nota2: em [-4, -1, -1, 0, 1, 2] com i = 1: acha (-1,-1,2) e (-1,0,1); i = 2 também vale -1, por isso é saltado.
 
@@ -314,27 +314,27 @@ maxArea([1, 8, 6, 2, 5, 4, 8, 3, 7]); // result ==> 49  (paredes 8 e 7: largura 
 maxArea([1, 1]); // result ==> 1
 maxArea([5]); // result ==> 0
 maxArea([2, 3, 4]); // result ==> 4  (pontas 2 e 4: 2 × 2 = 4; depois 3 e 4: 1 × 3 = 3)
-// nota: O(n) tempo, O(1) espaço. O array NÃO está ordenado: os ponteiros mexem-se pela altura, não pela soma como no 3Sum.
+// nota: O(n) tempo, O(1) espaço. O array NÃO está ordenado: os pointers mexem-se pela altura, não pela soma como no 3Sum.
 // nota2: em [1, 8, 6, 2, 5, 4, 8, 3, 7]: 8 × 1 = 8 (mexe o left), 7 × 7 = 49 (mexe o right), 6 × 3 = 18 (mexe o right).
 
 // =====================================================================================
-// §4 ── JANELA DESLIZANTE VARIÁVEL COM MAP ──────────
+// §4 ── SLIDING WINDOW VARIÁVEL COM MAP ──────────
 // =====================================================================================
 // Usar quando o enunciado diz: "substring/subarray contíguo", "o mais longo/curto", "sem repetir", "no máximo k", "todas as posições de um anagrama"
-// Molde: cresce pela direita; encolhe pela esquerda enquanto a janela está inválida.
+// Molde: cresce pela direita; encolhe pela esquerda enquanto a window está inválida.
 //   const freq = new Map(); let left = 0, best = 0;
 //   for (let right = 0; right < s.length; right++) {
 //     juntar s[right] a freq;
-//     while (janela inválida) { tirar s[left] de freq; left++; }
-//     best = Math.max(best, right - left + 1);   // tamanho da janela
+//     while (window inválida) { tirar s[left] de freq; left++; }
+//     best = Math.max(best, right - left + 1);   // tamanho da window
 //   }
 
 //--------------------------------------------------------------------
 // Longest Substring Without Repeating Characters (LC 3) - // serve para achar o maior pedaço sem letras repetidas: em "pwwkew" é "wke" (3).
 
 function lengthOfLongestSubstring(s) {
-  // passo 1 — esqueleto: a janela [left..right], o melhor e o return
-  // freq: chave = letra, valor = quantas vezes está na janela atual
+  // passo 1 — esqueleto: a window [left..right], o melhor e o return
+  // freq: key = letra, value = quantas vezes está na window atual
   const freq = new Map();
   let left = 0;
   let best = 0;
@@ -348,14 +348,14 @@ function lengthOfLongestSubstring(s) {
       freq.set(entering, 1);
     }
 
-    // passo 3 — a janela ficou inválida (letra repetida)? encolhe pela esquerda até ela voltar a 1
+    // passo 3 — a window ficou inválida (letra repetida)? encolhe pela esquerda até ela voltar a 1
     while (freq.get(entering) > 1) {
       const leaving = s[left];
       freq.set(leaving, freq.get(leaving) - 1);
       left++;
     }
 
-    // passo 4 — guarda o tamanho da janela se for o maior
+    // passo 4 — guarda o tamanho da window se for o maior
     best = Math.max(best, right - left + 1);
   }
 
@@ -369,15 +369,15 @@ lengthOfLongestSubstring(""); // result ==> 0
 lengthOfLongestSubstring(" "); // result ==> 1  (o espaço também é um carácter)
 lengthOfLongestSubstring("aA"); // result ==> 2  (maiúscula ≠ minúscula)
 lengthOfLongestSubstring("abba"); // result ==> 2  ("ab"; no 2.º b encolhe para "b"; depois "ba")
-// nota: O(n) tempo, O(tamanho do alfabeto) espaço. É substring, não subsequência: "pwke" não conta, porque não é seguido em "pwwkew".
-// nota2: em "pwwkew", no 2.º w o w fica com 2: sai o "p", sai o "w", left = 2 e a janela é "w".
+// nota: O(n) tempo, O(tamanho do alfabeto) espaço. É substring, não subsequence: "pwke" não conta, porque não é seguido em "pwwkew".
+// nota2: em "pwwkew", no 2.º w o w fica com 2: sai o "p", sai o "w", left = 2 e a window é "w".
 
 //--------------------------------------------------------------------
 // Longest Repeating Character Replacement (LC 424) - // serve para achar o maior pedaço de uma só letra trocando até k letras: "AABABBA" com k = 1 dá 4 ("AAAA").
 
 function characterReplacement(s, k) {
-  // passo 1 — esqueleto: a janela [left..right], o melhor e o return
-  // freq: chave = letra, valor = quantas vezes está na janela
+  // passo 1 — esqueleto: a window [left..right], o melhor e o return
+  // freq: key = letra, value = quantas vezes está na window
   const freq = new Map();
   let left = 0;
   let maxFreq = 0; // a maior contagem de uma letra vista até agora
@@ -402,7 +402,7 @@ function characterReplacement(s, k) {
       left++;
     }
 
-    // passo 5 — guarda o tamanho da janela se for o maior
+    // passo 5 — guarda o tamanho da window se for o maior
     best = Math.max(best, right - left + 1);
   }
 
@@ -414,23 +414,23 @@ characterReplacement("ABAB", 2); // result ==> 4
 characterReplacement("A", 0); // result ==> 1
 characterReplacement("", 2); // result ==> 0
 characterReplacement("AAAB", 0); // result ==> 3  (sem trocas, o maior pedaço de uma só letra é "AAA")
-// nota: O(n) tempo, O(26) espaço. No LC 3 a janela é inválida quando uma letra repete; aqui, quando há mais de k letras diferentes da mais comum.
+// nota: O(n) tempo, O(26) espaço. No LC 3 a window é inválida quando uma letra repete; aqui, quando há mais de k letras diferentes da mais comum.
 // nota2: maxFreq nunca desce ao encolher. Não faz mal: só um maxFreq MAIOR pode dar uma resposta melhor.
 
 //--------------------------------------------------------------------
 // Find All Anagrams in a String (LC 438) - // serve para achar as posições onde começa um anagrama de p: em "cbaebabacd" com p = "abc" dá [0, 6].
 
 function findAnagrams(s, p) {
-  // passo 1 — esqueleto: contagens, janela de tamanho FIXO p.length, return
-  // p maior que s: não cabe nenhuma janela
+  // passo 1 — esqueleto: contagens, window de tamanho FIXO p.length, return
+  // p maior que s: não cabe nenhuma window
   if (p.length > s.length) {
     return [];
   }
 
-  // índice 0 = 'a', 1 = 'b', …, 25 = 'z' (só letras minúsculas); 'a' vale 97
+  // index 0 = 'a', 1 = 'b', …, 25 = 'z' (só letras minúsculas); 'a' vale 97
   const letterIndex = (letter) => letter.charCodeAt(0) - 97;
 
-  // passo 2 — contagem das letras de p, e contagem das letras da janela
+  // passo 2 — contagem das letras de p, e contagem das letras da window
   const targetCount = new Array(26).fill(0);
   const windowCount = new Array(26).fill(0);
   for (const letter of p) {
@@ -442,12 +442,12 @@ function findAnagrams(s, p) {
     // passo 3 — entra a letra da direita
     windowCount[letterIndex(s[right])]++;
 
-    // passo 4 — a janela passou o tamanho de p? sai a letra da esquerda
+    // passo 4 — a window passou o tamanho de p? sai a letra da esquerda
     if (right >= p.length) {
       windowCount[letterIndex(s[right - p.length])]--;
     }
 
-    // passo 5 — a janela já tem p.length letras e as contagens são iguais? guarda o início
+    // passo 5 — a window já tem p.length letras e as contagens são iguais? guarda o início
     const windowIsFull = right >= p.length - 1;
     if (windowIsFull && windowCount.join() === targetCount.join()) {
       starts.push(right - p.length + 1);
@@ -461,15 +461,15 @@ findAnagrams("cbaebabacd", "abc"); // result ==> [0, 6]  ("cba" e "bac")
 findAnagrams("abab", "ab"); // result ==> [0, 1, 2]
 findAnagrams("a", "ab"); // result ==> []
 findAnagrams("", "a"); // result ==> []
-findAnagrams("aaa", "aa"); // result ==> [0, 1]  (as janelas "aa" começam nos índices 0 e 1)
-// nota: O(26 · n) = O(n) tempo, O(1) espaço. Janela fixa: entra um, sai um, compara as contagens.
-// nota2: a === b com arrays compara a REFERÊNCIA e dá false para dois arrays iguais; join() faz texto, que se compara por valor.
+findAnagrams("aaa", "aa"); // result ==> [0, 1]  (as windows "aa" começam nos indexes 0 e 1)
+// nota: O(26 · n) = O(n) tempo, O(1) espaço. Window fixa: entra um, sai um, compara as contagens.
+// nota2: a === b com arrays compara a REFERÊNCIA e dá false para dois arrays iguais; join() faz uma string, que se compara por value.
 
 // =====================================================================================
-// §5 ── PILHA MONÓTONA + PILHA ──────────
+// §5 ── MONOTONIC STACK + STACK ──────────
 // =====================================================================================
 // Usar quando o enunciado diz: "próximo maior/menor", "quantos dias até", "o primeiro à direita que…", "avaliar expressão", "mínimo em O(1)"
-// Molde (pilha monótona): a pilha guarda ÍNDICES que ainda esperam pela resposta.
+// Molde (monotonic stack): a stack guarda INDEXES que ainda esperam pela resposta.
 //   const stack = [];
 //   for (let i = 0; i < arr.length; i++) {
 //     while (stack.length && arr[i] > arr[stack.at(-1)]) {   // i é a resposta do topo
@@ -477,17 +477,17 @@ findAnagrams("aaa", "aa"); // result ==> [0, 1]  (as janelas "aa" começam nos �
 //     }
 //     stack.push(i);
 //   }
-// Cada índice entra e sai uma vez → O(n), mesmo com o while dentro do for.
+// Cada index entra e sai uma vez → O(n), mesmo com o while dentro do for.
 
 //--------------------------------------------------------------------
 // Daily Temperatures (LC 739) - // serve para dizer, para cada dia, quantos dias faltam até um dia mais quente (0 se nunca aquece).
 
 function dailyTemperatures(temps) {
-  // passo 1 — esqueleto: a resposta (0 = nunca aquece), a pilha, o ciclo e o return
+  // passo 1 — esqueleto: a resposta (0 = nunca aquece), a stack, o loop e o return
   const answer = new Array(temps.length).fill(0);
 
-  // passo 2 — a pilha guarda os ÍNDICES dos dias ainda à espera de um dia mais quente
-  // a resposta é uma distância (i - day); a temperatura lê-se com temps[índice]
+  // passo 2 — a stack guarda os INDEXES dos dias ainda à espera de um dia mais quente
+  // a resposta é uma distância (i - day); a temperatura lê-se com temps[index]
   const stack = [];
 
   for (let i = 0; i < temps.length; i++) {
@@ -508,17 +508,17 @@ dailyTemperatures([73, 74, 75, 71, 69, 72, 76, 73]); // result ==> [1, 1, 4, 2, 
 dailyTemperatures([30, 30, 30]); // result ==> [0, 0, 0]  (igual não é "mais quente")
 dailyTemperatures([]); // result ==> []
 dailyTemperatures([50, 40, 60]); // result ==> [2, 1, 0]  (o 60 resolve o 40 e depois o 50; ninguém aquece depois do 60)
-// nota: O(n) tempo e espaço. Cada índice entra e sai uma vez, por isso o while dentro do for continua O(n).
+// nota: O(n) tempo e espaço. Cada index entra e sai uma vez, por isso o while dentro do for continua O(n).
 // nota2: em [73, 74, 75, 71, 69, 72, 76, 73], no dia 5 (72) saem o 69 (res[4] = 1) e o 71 (res[3] = 2); o 75 fica à espera.
 
 //--------------------------------------------------------------------
 // Evaluate Reverse Polish Notation (LC 150) - // serve para calcular ["2","1","+","3","*"] = (2+1)*3, com o operador DEPOIS dos números.
 
 function evalRPN(tokens) {
-  // passo 1 — esqueleto: a pilha, o ciclo sobre os tokens e o return
+  // passo 1 — esqueleto: a stack, o loop sobre os tokens e o return
   const stack = [];
 
-  // passo 2 — a tabela de operadores: chave = símbolo, valor = função que calcula
+  // passo 2 — a tabela de operadores: key = símbolo, value = function que calcula
   const ops = {
     "+": (a, b) => a + b,
     "-": (a, b) => a - b,
@@ -527,13 +527,13 @@ function evalRPN(tokens) {
   };
 
   for (const token of tokens) {
-    // passo 3 — o token é um operador: tira dois, calcula e devolve o resultado à pilha
+    // passo 3 — o token é um operador: tira dois, calcula e devolve o resultado à stack
     if (token in ops) {
       const right = stack.pop(); // sai primeiro o operando da DIREITA
       const left = stack.pop(); // depois o da esquerda
       stack.push(ops[token](left, right));
     }
-    // passo 4 — o token é um número: entra na pilha
+    // passo 4 — o token é um número: entra na stack
     else {
       stack.push(Number(token));
     }
@@ -548,14 +548,14 @@ evalRPN(["10", "6", "9", "3", "+", "-11", "*", "/", "*", "17", "+", "5", "+"]); 
 evalRPN(["-7", "2", "/"]); // result ==> -3  (trunc corta para zero; floor daria -4)
 evalRPN(["5", "2", "-"]); // result ==> 3  (right = 2 sai primeiro, left = 5; 5 - 2, não 2 - 5)
 // nota: O(n) tempo e espaço. Math.trunc(-3.5) = -3 e Math.floor(-3.5) = -4: com negativos diferem.
-// nota2: em ["2","1","+","3","*"]: pilha [2,1], o "+" dá [3]; entra o 3, [3,3], o "*" dá [9].
+// nota2: em ["2","1","+","3","*"]: stack [2,1], o "+" dá [3]; entra o 3, [3,3], o "*" dá [9].
 
 //--------------------------------------------------------------------
-// Min Stack (LC 155) - // serve para ter uma pilha com push, pop, top e getMin, todos instantâneos.
+// Min Stack (LC 155) - // serve para ter uma stack com push, pop, top e getMin, todos instantâneos.
 
 class MinStack {
-  // passo 1 — esqueleto: duas pilhas lado a lado
-  // values = os valores; mins[i] = o menor valor entre values[0..i]
+  // passo 1 — esqueleto: duas stacks lado a lado
+  // values = os values; mins[i] = o menor value entre values[0..i]
   constructor() {
     this.values = [];
     this.mins = [];
@@ -564,11 +564,11 @@ class MinStack {
   push(value) {
     this.values.push(value);
 
-    // passo 2 — a pilha de mínimos está vazia? o mínimo é o próprio valor
+    // passo 2 — a stack de mínimos está vazia? o mínimo é o próprio value
     if (this.mins.length === 0) {
       this.mins.push(value);
     }
-    // senão, o novo mínimo é o menor entre o valor e o mínimo anterior
+    // senão, o novo mínimo é o menor entre o value e o mínimo anterior
     else {
       const previousMin = this.mins.at(-1);
       this.mins.push(Math.min(value, previousMin));
@@ -606,14 +606,14 @@ class MinStack {
   other.pop();
   other.getMin(); // result ==> 5  (o pop tira o 3 e o seu mínimo; fica mins = [5])
 }
-// nota: todas as operações são O(1). Uma variável min não sabia qual era o mínimo anterior depois de um pop; a pilha de mínimos sabe.
-// nota2: versão compacta do push: this.mins.push(Math.min(value, this.mins.at(-1) ?? Infinity)); o Infinity serve para a pilha vazia.
+// nota: todas as operações são O(1). Uma variable min não sabia qual era o mínimo anterior depois de um pop; a stack de mínimos sabe.
+// nota2: versão compacta do push: this.mins.push(Math.min(value, this.mins.at(-1) ?? Infinity)); o Infinity serve para a stack vazia.
 
 // =====================================================================================
-// §6 ── PESQUISA BINÁRIA AVANÇADA ──────────
+// §6 ── BINARY SEARCH AVANÇADA ──────────
 // =====================================================================================
 // Usar quando o enunciado diz: "ordenado (mas rodado)", "em O(log n)", "a menor velocidade/capacidade que consegue…", n até 10^9
-// Molde (pesquisa binária na resposta): o menor x que funciona.
+// Molde (binary search na resposta): o menor x que funciona.
 //   let lo = minPossível, hi = maxPossível;
 //   while (lo < hi) {
 //     const mid = Math.floor((lo + hi) / 2);
@@ -634,7 +634,7 @@ function searchRotated(nums, target) {
   while (lo <= hi) {
     const mid = Math.floor((lo + hi) / 2);
 
-    // passo 2 — encontrado: o return termina a função já
+    // passo 2 — encontrado: o return termina a function já
     if (nums[mid] === target) {
       return mid;
     }
@@ -678,15 +678,15 @@ searchRotated([3, 1], 1); // result ==> 1
 searchRotated([1, 2, 3], 3); // result ==> 2  (não rodado)
 searchRotated([], 5); // result ==> -1
 searchRotated([5, 1, 3], 5); // result ==> 0  (mid = 1: a direita 1..3 está ordenada e não tem o 5; hi = 0; depois mid = 0 acha o 5)
-// nota: O(log n) tempo, O(1) espaço. Para achar um valor exato usa-se lo <= hi (a zona de 1 elemento ainda é testada); na pesquisa na resposta usa-se lo < hi e devolve-se lo.
+// nota: O(log n) tempo, O(1) espaço. Para achar um value exato usa-se lo <= hi (a zona de 1 elemento ainda é testada); na binary search na resposta usa-se lo < hi e devolve-se lo.
 // nota2: em [4,5,6,7,0,1,2] com target 0: mid 3 (7), a esquerda 4..7 está ordenada e não tem o 0, lo = 4; mid 5 (1), hi = 4; mid 4 (0), return 4.
 
 //--------------------------------------------------------------------
 // Koko Eating Bananas (LC 875) - // serve para achar a menor velocidade que come todas as pilhas em h horas: [3, 6, 7, 11] com h = 8 dá 4.
 
 function minEatingSpeed(piles, h) {
-  // passo 1 — esqueleto: a pesquisa binária sobre a VELOCIDADE (de 1 até à maior pilha), return lo
-  // passo 2 — a função auxiliar: horas precisas a uma velocidade
+  // passo 1 — esqueleto: a binary search sobre a VELOCIDADE (de 1 até à maior pilha), return lo
+  // passo 2 — a helper function: horas precisas a uma velocidade
   const hoursAt = (speed) => {
     let totalHours = 0;
     for (const pile of piles) {
@@ -721,7 +721,7 @@ minEatingSpeed([30, 11, 23, 4, 20], 5); // result ==> 30  (h = número de pilhas
 minEatingSpeed([30, 11, 23, 4, 20], 6); // result ==> 23
 minEatingSpeed([1], 1); // result ==> 1
 minEatingSpeed([4], 2); // result ==> 2  (a 1/hora leva 4 horas, mais que 2; a 2/hora leva 2)
-// nota: O(n · log(maiorPilha)) tempo. Pesquisa-se a resposta, não o array. Versão compacta de hoursAt: piles.reduce((total, pile) => total + Math.ceil(pile / speed), 0).
+// nota: O(n · log(maxPile)) tempo. A binary search é sobre a resposta, não o array. Versão compacta de hoursAt: piles.reduce((total, pile) => total + Math.ceil(pile / speed), 0).
 // nota2: Math.max(...piles) pode rebentar com arrays enormes (centenas de milhares); aí usa um for ou reduce. Math.ceil, não floor: a Koko não come duas pilhas na mesma hora.
 
 // =====================================================================================
@@ -734,7 +734,7 @@ minEatingSpeed([4], 2); // result ==> 2  (a 1/hora leva 4 horas, mais que 2; a 2
 // Merge Intervals (LC 56) - // serve para juntar os intervalos que se sobrepõem: [[1,3],[2,6],[8,10]] vira [[1,6],[8,10]].
 
 function merge(intervals) {
-  // passo 1 — esqueleto: copiar e ordenar por início, o resultado, o ciclo e o return
+  // passo 1 — esqueleto: copiar e ordenar por início, o resultado, o loop e o return
   const copy = intervals.map((interval) => [...interval]); // copia cada par: não altera o input
   const sorted = copy.sort((a, b) => a[0] - b[0]);
   const merged = [];
@@ -813,18 +813,18 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
 // nota2: em [[1,2],[3,5],[6,7],[8,10],[12,16]] + [4,8]: copia [1,2]; engole [3,5], [6,7], [8,10] (8 <= 8) e dá [3,10]; copia [12,16].
 
 // =====================================================================================
-// §8 ── MATRIZ / GRELHA (DFS e BFS) ──────────
+// §8 ── MATRIX / GRID (DFS e BFS) ──────────
 // =====================================================================================
-// Usar quando o enunciado diz: grid[][], "ilhas", "regiões ligadas", "vizinhos cima/baixo/esquerda/direita", "menos passos", "minutos até espalhar"
-// Molde: dois for (r, c) para achar o começo; uma função auxiliar visita os 4 vizinhos, cada um com o seu if.
-//   DFS (recursão) = tudo o que está ligado; BFS (fila) = menos passos.
+// Usar quando o enunciado diz: grid[][], "ilhas", "regiões ligadas", "neighbours cima/baixo/esquerda/direita", "menos passos", "minutos até espalhar"
+// Molde: dois for (r, c) para achar o começo; uma helper function visita os 4 neighbours, cada um com o seu if.
+//   DFS (recursion) = tudo o que está ligado; BFS (queue) = menos passos.
 //   if (row > 0 && grid[row - 1][col] === "1")                 // cima
 //   if (row < grid.length - 1 && grid[row + 1][col] === "1")   // baixo
 //   if (col > 0 && grid[row][col - 1] === "1")                 // esquerda
 //   if (col < grid[0].length - 1 && grid[row][col + 1] === "1") // direita
 
 //--------------------------------------------------------------------
-// Number of Islands (LC 200) - // serve para contar grupos de "1" que se tocam numa grelha (as ilhas), com uma fila (BFS).
+// Number of Islands (LC 200) - // serve para contar grupos de "1" que se tocam numa grid (as ilhas), com uma queue (BFS).
 {
   const islandGrid = [
     ["1", "1", "0", "0", "0"],
@@ -835,7 +835,7 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
 
   // passo 1 — esqueleto: cada "1" ainda não visitado é uma ilha nova
   const numIslands = (original) => {
-    const grid = original.map((line) => [...line]); // cópia: vamos escrever "0" nas células visitadas
+    const grid = original.map((line) => [...line]); // cópia: vamos escrever "0" nas cells visitadas
     let island = 0;
     for (let r = 0; r < grid.length; r++) {
       for (let c = 0; c < grid[0].length; c++) {
@@ -848,17 +848,17 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
     return island;
   };
 
-  // passo 2 — a fila: começa na célula (r, c) e tira uma célula de cada vez
+  // passo 2 — a queue: começa na cell (r, c) e tira uma cell de cada vez
   const bfsSearch = (r, c, grid) => {
     const queue = [[r, c]];
     grid[r][c] = "0";
     while (queue.length) {
       const [row, col] = queue.shift();
 
-      // passo 3 — cada vizinho tem o seu if, com os limites escritos
+      // passo 3 — cada neighbour tem o seu if, com os limites escritos
       // cima
       if (row > 0 && grid[row - 1][col] === "1") {
-        // passo 4 — pôr na fila e marcar já, senão a célula entrava duas vezes
+        // passo 4 — pôr na queue e marcar já, senão a cell entrava duas vezes
         queue.push([row - 1, col]);
         grid[row - 1][col] = "0";
       }
@@ -881,17 +881,17 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
   };
 
   numIslands(islandGrid); // result ==> 3
-  islandGrid[0][0]; // result ==> "1"  (o input não foi alterado: a função trabalha numa cópia)
+  islandGrid[0][0]; // result ==> "1"  (o input não foi alterado: a function trabalha numa cópia)
   numIslands([["0"]]); // result ==> 0
   numIslands([["1"]]); // result ==> 1
   numIslands([]); // result ==> 0
   numIslands([["1", "0", "1"]]); // result ==> 2  (separados por um "0"; as diagonais também não contam)
 }
-// nota: esta grelha tem STRINGS; grid[r][c] === 1 daria sempre false. Tempo e espaço O(rows · cols).
-// nota2: shift() é O(n); com um índice que avança fica O(1).
+// nota: esta grid tem STRINGS; grid[r][c] === 1 daria sempre false. Tempo e espaço O(rows · cols).
+// nota2: shift() é O(n); com um index que avança fica O(1).
 
 //--------------------------------------------------------------------
-// Number of Islands com DFS - // serve para contar as mesmas ilhas, indo até ao fundo de um lado antes de tentar os outros (recursão).
+// Number of Islands com DFS - // serve para contar as mesmas ilhas, indo até ao fundo de um lado antes de tentar os outros (recursion).
 {
   const islandGrid = [
     ["1", "1", "0", "0", "0"],
@@ -900,7 +900,7 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
     ["0", "0", "0", "1", "1"],
   ];
 
-  // passo 1 — esqueleto: igual ao BFS; só muda a função auxiliar
+  // passo 1 — esqueleto: igual ao BFS; só muda a helper function
   const numIslandsDfs = (original) => {
     const grid = original.map((line) => [...line]);
     let island = 0;
@@ -915,16 +915,16 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
     return island;
   };
 
-  // passo 2 — a recursão: a função chama-se a si própria em cada vizinho
+  // passo 2 — a recursion: a function chama-se a si própria em cada neighbour
   const dfsSearch = (row, col, grid) => {
-    // passo 3 — parar o ramo: fora da grelha, ou não é terra
+    // passo 3 — parar o branch: fora da grid, ou não é terra
     if (row < 0 || row >= grid.length || col < 0 || col >= grid[0].length) {
       return;
     }
     if (grid[row][col] !== "1") {
       return;
     }
-    // passo 4 — marcar ANTES de chamar os vizinhos, senão voltava para trás para sempre
+    // passo 4 — marcar ANTES de chamar os neighbours, senão voltava para trás para sempre
     grid[row][col] = "0";
     // cima
     dfsSearch(row - 1, col, grid);
@@ -941,8 +941,8 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
   numIslandsDfs([["1", "0", "1"]]); // result ==> 2
   numIslandsDfs([]); // result ==> 0
 }
-// nota: DFS vê o que está ligado mas não conta passos; para "menos passos / minutos" usa BFS por níveis (bloco seguinte).
-// nota2: tempo O(rows · cols); a recursão pode ficar funda numa grelha enorme.
+// nota: DFS vê o que está ligado mas não conta passos; para "menos passos / minutos" usa BFS por levels (bloco seguinte).
+// nota2: tempo O(rows · cols); a recursion pode ficar funda numa grid enorme.
 
 //--------------------------------------------------------------------
 // Rotting Oranges (LC 994) - // serve para saber em quantos minutos todas as laranjas apodrecem, com várias podres a espalhar ao mesmo tempo (2 = podre, 1 = fresca, 0 = vazio).
@@ -953,7 +953,7 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
     let fresh = 0;
     let minutes = 0;
 
-    // passo 1 — esqueleto: TODAS as podres entram na fila; contar as frescas
+    // passo 1 — esqueleto: TODAS as podres entram na queue; contar as frescas
     for (let r = 0; r < grid.length; r++) {
       for (let c = 0; c < grid[0].length; c++) {
         if (grid[r][c] === 2) {
@@ -965,15 +965,15 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
       }
     }
 
-    // passo 2 — uma volta do while = um minuto (só enquanto houver frescas)
+    // passo 2 — uma iteration do while = um minuto (só enquanto houver frescas)
     while (queue.length > 0 && fresh > 0) {
       minutes++;
-      // passo 3 — tratar só as podres que já estavam na fila neste minuto
+      // passo 3 — tratar só as podres que já estavam na queue neste minuto
       const rottenNow = queue.length;
       for (let i = 0; i < rottenNow; i++) {
         const [row, col] = queue.shift();
 
-        // passo 4 — cada vizinho fresco apodrece e entra na fila
+        // passo 4 — cada neighbour fresco apodrece e entra na queue
         // cima
         if (row > 0 && grid[row - 1][col] === 1) {
           grid[row - 1][col] = 2;
@@ -1013,21 +1013,21 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
   orangesRotting([[1]]); // result ==> -1  (fresca, mas nada podre)
   orangesRotting([[2, 1, 1]]); // result ==> 2  (minuto 1 apodrece a do meio; minuto 2 a da ponta)
 }
-// nota: BFS por níveis: o size da fila no início da volta separa os minutos. Tempo e espaço O(rows · cols); shift() é O(n).
-// nota2: DFS (como nas ilhas) não conta passos; para "minutos" é sempre BFS com todas as origens na fila inicial.
+// nota: BFS por levels: o size da queue no início da iteration separa os minutos. Tempo e espaço O(rows · cols); shift() é O(n).
+// nota2: DFS (como nas ilhas) não conta passos; para "minutos" é sempre BFS com todas as origens na queue inicial.
 
 // =====================================================================================
-// §9 ── GRAFOS ──────────
+// §9 ── GRAPHS ──────────
 // =====================================================================================
-// Usar quando o enunciado diz: "pré-requisitos", "dependências", "arestas" / pares [a, b], "é possível acabar?", "ordem válida", "ciclo"
+// Usar quando o enunciado diz: "pré-requisitos", "dependências", "edges" / pares [a, b], "é possível acabar?", "ordem válida", "cycle"
 
 //--------------------------------------------------------------------
-// Lista de adjacência - // serve para transformar pares [a, b] em "quem são os meus vizinhos", pronta a percorrer como a grelha.
+// Adjacency list - // serve para transformar pares [a, b] em "quem são os meus neighbours", pronta a percorrer como a grid.
 {
   const buildGraph = (n, edges) => {
-    // passo 1 — esqueleto: uma lista vazia, NOVA, para cada nó
+    // passo 1 — esqueleto: um array vazio, NOVO, para cada node
     const graph = Array.from({ length: n }, () => []);
-    // passo 2 — cada aresta [a, b] põe o b na lista do a
+    // passo 2 — cada edge [a, b] põe o b no array do a
     for (const [a, b] of edges) {
       graph[a].push(b);
     }
@@ -1037,13 +1037,13 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
   buildGraph(3, []); // result ==> [[], [], []]
   buildGraph(3, [[0, 1]]); // result ==> [[1], [], []]
   buildGraph(3, [[0, 1], [0, 2]]); // result ==> [[1, 2], [], []]
-  buildGraph(2, [[1, 0]]); // result ==> [[], [0]]  (a aresta sai do 1 para o 0; só graph[1] recebe)
+  buildGraph(2, [[1, 0]]); // result ==> [[], [0]]  (a edge sai do 1 para o 0; só graph[1] recebe)
 }
-// nota: new Array(n).fill([]) põe o MESMO array em todas as posições; um push aparecia em todos os nós.
-// nota2: este grafo é dirigido (só a → b). Não dirigido: acrescenta também graph[b].push(a).
+// nota: new Array(n).fill([]) põe o MESMO array em todas as posições; um push aparecia em todos os nodes.
+// nota2: este graph é directed (só a → b). Undirected: acrescenta também graph[b].push(a).
 
 //--------------------------------------------------------------------
-// Course Schedule (LC 207) - // serve para saber se dá para fazer todas as cadeiras com estes pré-requisitos, ou se há um ciclo.
+// Course Schedule (LC 207) - // serve para saber se dá para fazer todas as cadeiras com estes pré-requisitos, ou se há um cycle.
 {
   const canFinish = (numCourses, prerequisites) => {
     // passo 1 — esqueleto: graph[pre] = cadeiras que dependem de pre; inDegree[x] = pré-requisitos que x ainda tem por fazer
@@ -1056,7 +1056,7 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
       inDegree[course]++;
     }
 
-    // passo 3 — a fila: as cadeiras sem pré-requisitos, prontas a fazer
+    // passo 3 — a queue: as cadeiras sem pré-requisitos, prontas a fazer
     const queue = [];
     for (let i = 0; i < numCourses; i++) {
       if (inDegree[i] === 0) {
@@ -1064,7 +1064,7 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
       }
     }
 
-    // passo 4 — fazer uma cadeira e baixar o contador das que dependem dela
+    // passo 4 — fazer uma cadeira e baixar o counter das que dependem dela
     let done = 0;
     while (queue.length > 0) {
       const course = queue.shift();
@@ -1076,24 +1076,24 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
         }
       }
     }
-    return done === numCourses; // fez todas → não há ciclo
+    return done === numCourses; // fez todas → não há cycle
   };
 
   canFinish(3, [[1, 0], [2, 0]]); // result ==> true  (faz o 0; depois o 1 e o 2)
   canFinish(3, [[1, 0], [2, 1]]); // result ==> true  (uma cadeia: 0, 1, 2)
   canFinish(2, [[1, 0]]); // result ==> true
-  canFinish(2, [[1, 0], [0, 1]]); // result ==> false  (ciclo: inDegree [1, 1], a fila começa vazia)
+  canFinish(2, [[1, 0], [0, 1]]); // result ==> false  (cycle: inDegree [1, 1], a queue começa vazia)
   canFinish(1, []); // result ==> true
-  canFinish(4, [[1, 0], [2, 1], [3, 2], [1, 3]]); // result ==> false  (ciclo 1→2→3→1)
+  canFinish(4, [[1, 0], [2, 1], [3, 2], [1, 3]]); // result ==> false  (cycle 1→2→3→1)
 }
-// nota: [course, pre] diz "course precisa de pre", mas a seta vai de pre para course. Tempo e espaço O(V + E); a ordem em que a fila fica feita é uma ordem válida (LC 210).
-// nota2: shift() é O(n); ler queue[i] com um índice que avança fica O(1).
+// nota: [course, pre] diz "course precisa de pre", mas a seta vai de pre para course. Tempo e espaço O(V + E); a ordem em que a queue fica feita é uma ordem válida (LC 210).
+// nota2: shift() é O(n); ler queue[i] com um index que avança fica O(1).
 
 // =====================================================================================
 // §10 ── BACKTRACKING ──────────
 // =====================================================================================
-// Usar quando o enunciado diz: "todas as combinações / subconjuntos / permutações", "gerar todos", "todas as maneiras de…", n pequeno (≤ 20)
-// Molde: escolher → explorar → desfazer. Desenha a árvore de decisões em papel.
+// Usar quando o enunciado diz: "todas as combinações / subsets / permutations", "gerar todos", "todas as maneiras de…", n pequeno (≤ 20)
+// Molde: escolher → explorar → desfazer. Desenha a tree de decisões em papel.
 //   const res = [];
 //   const current = [];
 //   function bt(start) {
@@ -1109,17 +1109,17 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
 //   }
 
 //--------------------------------------------------------------------
-// Subsets (LC 78) - // serve para listar todos os subconjuntos, as 2^n escolhas possíveis de elementos.
+// Subsets (LC 78) - // serve para listar todos os subsets, as 2^n escolhas possíveis de elementos.
 {
   const subsets = (nums) => {
     const res = [];
     const current = [];
-    // passo 1 — esqueleto: começar na posição 0 e devolver res (a função bt vem a seguir; o JS sobe-a)
+    // passo 1 — esqueleto: começar na posição 0 e devolver res (a function bt vem a seguir; o JS sobe-a)
     bt(0);
     return res;
 
     function bt(start) {
-      // passo 2 — cada nó da árvore já é um subconjunto: guardar uma CÓPIA logo ao entrar
+      // passo 2 — cada node da tree já é um subset: guardar uma CÓPIA logo ao entrar
       res.push([...current]);
       // passo 3 — escolher cada número a partir de start
       for (let i = start; i < nums.length; i++) {
@@ -1131,14 +1131,14 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
     }
   };
 
-  // qualquer ordem é aceite: os exemplos passam cada resposta a texto com join() e ordenam com toSorted()
-  subsets([1, 2, 3]).map((s) => s.join()).toSorted(); // result ==> ["", "1", "1,2", "1,2,3", "1,3", "2", "2,3", "3"]  (8 subconjuntos)
+  // qualquer ordem é aceite: os exemplos passam cada resposta a string com join() e ordenam com toSorted()
+  subsets([1, 2, 3]).map((s) => s.join()).toSorted(); // result ==> ["", "1", "1,2", "1,2,3", "1,3", "2", "2,3", "3"]  (8 subsets)
   subsets([]); // result ==> [[]]
   subsets([7]); // result ==> [[], [7]]  (bt(0) guarda []; depois push 7 e bt(1) guarda [7])
   subsets([1, 2, 3, 4]).length; // result ==> 16  (2^4)
 }
 // nota: res.push(current) sem cópia guardava 8 vezes o MESMO array, que no fim ficava vazio. Tempo O(n · 2^n).
-// nota2: o JS sobe a função bt para o topo da função de fora; por isso bt(0) funciona antes da linha onde bt aparece.
+// nota2: o JS sobe a function bt para o topo da function de fora; por isso bt(0) funciona antes da linha onde bt aparece.
 
 //--------------------------------------------------------------------
 // Permutations (LC 46) - // serve para listar todas as ordens possíveis dos números, as n! ordenações.
@@ -1152,12 +1152,12 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
     return res;
 
     function bt() {
-      // passo 2 — current cheio = uma permutação completa: guardar e voltar atrás
+      // passo 2 — current cheio = uma permutation completa: guardar e voltar atrás
       if (current.length === nums.length) {
         res.push([...current]);
         return;
       }
-      // passo 3 — em cada nível, tentar TODOS os índices (volta-se ao 0)
+      // passo 3 — em cada level, tentar TODOS os indexes (volta-se ao 0)
       for (let i = 0; i < nums.length; i++) {
         // passo 4 — só os que ainda não foram usados
         if (used[i] === false) {
@@ -1171,12 +1171,12 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
     }
   };
 
-  permute([1, 2, 3]).map((p) => p.join()).toSorted(); // result ==> ["1,2,3", "1,3,2", "2,1,3", "2,3,1", "3,1,2", "3,2,1"]  (6 permutações)
+  permute([1, 2, 3]).map((p) => p.join()).toSorted(); // result ==> ["1,2,3", "1,3,2", "2,1,3", "2,3,1", "3,1,2", "3,2,1"]  (6 permutations)
   permute([1]); // result ==> [[1]]
   permute([1, 2]).length; // result ==> 2  ([1,2] e [2,1]; 2! = 2)
 }
 // nota: em Subsets [1,2] = [2,1], por isso só se anda para a frente (start); aqui a ordem conta, por isso volta-se ao 0 e salta-se o usado. Tempo O(n · n!).
-// nota2: used[i] = false no fim é o "desfazer": sem ele, o número ficava bloqueado para os outros ramos.
+// nota2: used[i] = false no fim é o "desfazer": sem ele, o número ficava bloqueado para os outros branches.
 
 //--------------------------------------------------------------------
 // Combination Sum (LC 39) - // serve para achar todas as combinações que somam target, podendo repetir números ([2,3,6,7] com 7 dá [[2,2,3], [7]]).
@@ -1194,7 +1194,7 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
         res.push([...current]);
         return;
       }
-      // passo 3 — passou do alvo: cortar este ramo
+      // passo 3 — passou do alvo: cortar este branch
       if (remaining < 0) {
         return;
       }
@@ -1213,17 +1213,17 @@ insert([[1, 5]], [2, 3]); // result ==> [[1, 5]]  (sobrepõe: min dos inícios 1
   combinationSum([3], 9); // result ==> [[3, 3, 3]]  (só há o 3; repete até remaining chegar a 0)
 }
 // nota: bt(i) permite repetir o mesmo número; bt(i + 1) usa cada um no máximo uma vez (como em Subsets).
-// nota2: tempo exponencial, ~O(2^target); a recursão tem no máximo O(target) níveis.
+// nota2: tempo exponencial, ~O(2^target); a recursion tem no máximo O(target) levels.
 
 // =====================================================================================
-// §11 ── HEAP (fila de prioridade) ──────────
+// §11 ── HEAP (priority queue) ──────────
 // =====================================================================================
-// Usar quando o enunciado diz: "k-ésimo maior/menor", "os k mais…", "sempre o mínimo atual", "juntar k listas ordenadas", dados em fluxo
+// Usar quando o enunciado diz: "k-ésimo maior/menor", "os k mais…", "sempre o mínimo atual", "juntar k linked lists ordenadas", dados em fluxo
 
 //--------------------------------------------------------------------
-// MinHeap - // serve para tirar sempre o menor valor em O(log n), enquanto vão entrando valores novos.
+// MinHeap - // serve para tirar sempre o menor value em O(log n), enquanto vão entrando values novos.
 class MinHeap {
-  // passo 1 — esqueleto: um array; cada pai (índice i) é <= aos filhos, por isso o menor está sempre em items[0]
+  // passo 1 — esqueleto: um array; cada parent (index i) é <= aos children, por isso o menor está sempre em items[0]
   constructor() {
     this.items = [];
   }
@@ -1234,7 +1234,7 @@ class MinHeap {
     return this.items[0];
   }
 
-  // passo 2 — push: põe no fim e sobe enquanto for menor que o pai (pai de i = Math.floor((i - 1) / 2))
+  // passo 2 — push: põe no fim e sobe enquanto for menor que o parent (parent de i = Math.floor((i - 1) / 2))
   push(value) {
     const items = this.items;
     items.push(value);
@@ -1242,7 +1242,7 @@ class MinHeap {
     while (index > 0) {
       const parent = Math.floor((index - 1) / 2);
       if (items[parent] <= items[index]) {
-        break; // o pai já é menor: está no sítio
+        break; // o parent já é menor: está no sítio
       }
       const temp = items[parent];
       items[parent] = items[index];
@@ -1251,7 +1251,7 @@ class MinHeap {
     }
   }
 
-  // passo 3 — pop: guarda o topo, põe o último no topo e deixa-o afundar (filhos de i = 2i + 1 e 2i + 2)
+  // passo 3 — pop: guarda o topo, põe o último no topo e deixa-o afundar (children de i = 2i + 1 e 2i + 2)
   pop() {
     const items = this.items;
     const top = items[0];
@@ -1263,7 +1263,7 @@ class MinHeap {
         const left = 2 * index + 1;
         const right = 2 * index + 2;
         let smallest = index;
-        // passo 4 — comparar com cada filho; troca com o MENOR dos dois
+        // passo 4 — comparar com cada child; troca com o MENOR dos dois
         // esquerda
         if (left < items.length && items[left] < items[smallest]) {
           smallest = left;
@@ -1273,7 +1273,7 @@ class MinHeap {
           smallest = right;
         }
         if (smallest === index) {
-          break; // já é menor que os dois filhos: está no sítio
+          break; // já é menor que os dois children: está no sítio
         }
         const temp = items[smallest];
         items[smallest] = items[index];
@@ -1289,9 +1289,9 @@ class MinHeap {
   heap.push(5);
   heap.items; // result ==> [5]
   heap.push(3);
-  heap.items; // result ==> [3, 5]  (3 < pai 5: troca)
+  heap.items; // result ==> [3, 5]  (3 < parent 5: troca)
   heap.push(8);
-  heap.items; // result ==> [3, 5, 8]  (8 >= pai 3: fica)
+  heap.items; // result ==> [3, 5, 8]  (8 >= parent 3: fica)
   heap.push(1);
   heap.items; // result ==> [1, 3, 8, 5]  (1 sobe duas vezes; só o [0] é garantido, não está ordenado)
   heap.pop(); // result ==> 1
@@ -1322,7 +1322,7 @@ class MinHeap {
     for (const n of nums) {
       // passo 2 — cada número entra no heap
       heap.push(n);
-      // passo 3 — com mais de k valores, tira o menor: nunca será o k-ésimo maior
+      // passo 3 — com mais de k values, tira o menor: nunca será o k-ésimo maior
       if (heap.size > k) {
         heap.pop();
       }
@@ -1348,19 +1348,19 @@ class MinHeap {
 // nota2: ordenar uma cópia é mais simples mas custa O(n log n); copia antes de sort() para não mudar o original.
 
 // =====================================================================================
-// §12 ── PROGRAMAÇÃO DINÂMICA ──────────
+// §12 ── DYNAMIC PROGRAMMING ──────────
 // =====================================================================================
-// Usar quando o enunciado diz: "número de maneiras", "mínimo/máximo de…", "é possível…?", "sem vizinhos", "maior subsequência"
+// Usar quando o enunciado diz: "número de maneiras", "mínimo/máximo de…", "é possível…?", "sem neighbours", "maior subsequence"
 // Molde: responde a 3 perguntas no quadro, por palavras.
 //   1. ESTADO:     o que significa dp[i]? ex.: "o máximo que consigo roubar das casas 0..i"
 //   2. TRANSIÇÃO:  como chego a dp[i] a partir dos menores? Pensa na ÚLTIMA decisão.
 //   3. BASE:       os casos pequenos que não precisam de nada. ex.: dp[0] = house[0]
-// MEMO = recursão + Map (mais fácil de pensar). TABELA = for a preencher dp (sem recursão). Mesmo resultado.
+// MEMO = recursion + Map (mais fácil de pensar). TABELA = for a preencher dp (sem recursion). Mesmo resultado.
 
 //--------------------------------------------------------------------
 // House Robber (LC 198) - // serve para roubar o máximo sem roubar duas casas vizinhas; em cada casa, ou a salto ou a roubo.
 {
-  // Versão MEMO: memo é um Map; chave = índice i; valor = o máximo roubável das casas 0..i
+  // Versão MEMO: memo é um Map; key = index i; value = o máximo roubável das casas 0..i
   const robMemo = (nums) => {
     const memo = new Map();
     // passo 1 — esqueleto: a resposta é o melhor até à última casa
@@ -1384,7 +1384,7 @@ class MinHeap {
     }
   };
 
-  // Versão TABELA: prev = melhor até à casa anterior; prevPrev = melhor até duas casas atrás (só 2 valores → O(1) espaço)
+  // Versão TABELA: prev = melhor até à casa anterior; prevPrev = melhor até duas casas atrás (só 2 values → O(1) espaço)
   const rob = (nums) => {
     // passo 1 — esqueleto: andar pelas casas, sempre com os dois melhores resultados anteriores
     let prevPrev = 0;
@@ -1392,7 +1392,7 @@ class MinHeap {
     for (const house of nums) {
       // passo 2 — saltar (prev) ou roubar (prevPrev + casa)
       const current = Math.max(prev, prevPrev + house);
-      // passo 3 — deslizar os dois valores uma casa para a frente
+      // passo 3 — deslizar os dois values uma casa para a frente
       prevPrev = prev;
       prev = current;
     }
@@ -1410,7 +1410,7 @@ class MinHeap {
     f([5, 1, 1, 5]); // result ==> 10  (a 1.ª e a 4.ª: não são vizinhas)
   }
 }
-// nota: o memo começa no fim e desce por recursão; a tabela começa no início e sobe com um for. Calculam o mesmo.
+// nota: o memo começa no fim e desce por recursion; a tabela começa no início e sobe com um for. Calculam o mesmo.
 // nota2: tempo O(n); espaço O(1) na tabela e O(n) no memo.
 
 //--------------------------------------------------------------------
@@ -1480,12 +1480,12 @@ class MinHeap {
 // Longest Common Subsequence (LC 1143) - // serve para achar a maior sequência que duas strings partilham, com saltos ("abcde" e "ace" partilham "ace").
 {
   const longestCommonSubsequence = (a, b) => {
-    // passo 1 — esqueleto: dp[i][j] = LCS dos primeiros i caracteres de a e j de b; linha/coluna 0 = string vazia = 0
+    // passo 1 — esqueleto: dp[i][j] = LCS dos primeiros i caracteres de a e j de b; row/col 0 = string vazia = 0
     const dp = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
-    // passo 2 — preencher a tabela, linha a linha
+    // passo 2 — preencher a tabela, row a row
     for (let i = 1; i <= a.length; i++) {
       for (let j = 1; j <= b.length; j++) {
-        // i - 1 e j - 1 porque dp tem uma linha e uma coluna a mais
+        // i - 1 e j - 1 porque dp tem uma row e uma col a mais
         if (a[i - 1] === b[j - 1]) {
           // passo 3 — letras iguais: diagonal + 1
           dp[i][j] = dp[i - 1][j - 1] + 1;
@@ -1504,16 +1504,16 @@ class MinHeap {
   longestCommonSubsequence("", "abc"); // result ==> 0
   longestCommonSubsequence("ab", "ba"); // result ==> 1  (partilham "a" ou "b", mas não os dois pela mesma ordem)
 }
-// nota: subsequência permite saltos ("ace" em "abcde"); substring comum tem de ser contígua.
+// nota: subsequence permite saltos ("ace" em "abcde"); substring comum tem de ser contígua.
 // nota2: igual → diagonal + 1; diferente → max(cima, esquerda). Tempo e espaço O(n · m).
 
 //--------------------------------------------------------------------
 // Unique Paths (LC 62) - // serve para contar os caminhos de um robô que só anda para a direita ou para baixo, do canto de cima ao de baixo.
 {
   const uniquePaths = (m, n) => {
-    // passo 1 — esqueleto: dp[r][c] = caminhos até (r, c); a 1.ª linha e a 1.ª coluna valem 1
+    // passo 1 — esqueleto: dp[r][c] = caminhos até (r, c); a 1.ª row e a 1.ª col valem 1
     const dp = Array.from({ length: m }, () => new Array(n).fill(1));
-    // passo 2 — as outras células, linha a linha
+    // passo 2 — as outras cells, row a row
     for (let r = 1; r < m; r++) {
       for (let c = 1; c < n; c++) {
         // passo 3 — os que chegam de cima + os que chegam da esquerda
@@ -1527,16 +1527,16 @@ class MinHeap {
   uniquePaths(3, 7); // result ==> 28
   uniquePaths(3, 2); // result ==> 3
   uniquePaths(1, 1); // result ==> 1
-  uniquePaths(2, 3); // result ==> 3  (linha de baixo: 1, 1 + 1 = 2, 1 + 2 = 3)
+  uniquePaths(2, 3); // result ==> 3  (row de baixo: 1, 1 + 1 = 2, 1 + 2 = 3)
 }
-// nota: um DFS a contar caminhos percorre cada um (exponencial); a DP soma contagens, cada célula uma vez.
+// nota: um DFS a contar caminhos percorre cada um (exponencial); a DP soma contagens, cada cell uma vez.
 // nota2: tempo e espaço O(m · n).
 
 // =====================================================================================
-// §13 ── LISTAS LIGADAS (médio) ──────────
+// §13 ── LINKED LISTS (médio) ──────────
 // =====================================================================================
 // Usar quando o enunciado diz: `head`, "remover o n-ésimo a contar do fim", "numa só passagem", "dígitos por ordem inversa", "devolve a nova head"
-// Molde (nó dummy): um nó falso antes da head evita o caso especial de mudar a head. Trabalha a partir do dummy e devolve dummy.next.
+// Molde (node dummy): um node falso antes da head evita o caso especial de mudar a head. Trabalha a partir do dummy e devolve dummy.next.
 //   const dummy = new ListNode(0, head);
 //   ...trabalhar a partir de dummy...
 //   return dummy.next;
@@ -1565,10 +1565,10 @@ const toArray = (head) => {
 };
 
 //--------------------------------------------------------------------
-// Remove Nth Node From End of List (LC 19) - // serve para apagar o n-ésimo nó a contar do fim, numa só passagem ([1,2,3,4,5] com n = 2 → [1,2,3,5]).
+// Remove Nth Node From End of List (LC 19) - // serve para apagar o n-ésimo node a contar do fim, numa só passagem ([1,2,3,4,5] com n = 2 → [1,2,3,5]).
 {
   const removeNthFromEnd = (head, n) => {
-    // passo 1 — esqueleto: um dummy antes da head (se o alvo for a head, slow fica no dummy) e dois ponteiros
+    // passo 1 — esqueleto: um dummy antes da head (se o alvo for a head, slow fica no dummy) e two pointers
     const dummy = new ListNode(0, head);
     let fast = dummy;
     let slow = dummy;
@@ -1593,22 +1593,22 @@ const toArray = (head) => {
   toArray(removeNthFromEnd(toList([1, 2]), 1)); // result ==> [1]
   toArray(removeNthFromEnd(toList([1, 2, 3]), 3)); // result ==> [2, 3]  (o 3.º do fim é a head; slow fica no dummy)
 }
-// nota: com n passos (e não n + 1), slow parava EM cima do alvo; para o apagar é preciso estar no nó anterior.
+// nota: com n passos (e não n + 1), slow parava EM cima do alvo; para o apagar é preciso estar no node anterior.
 // nota2: tempo O(n), espaço O(1). Versão compacta dos 2 últimos passos: slow.next = slow.next.next.
 
 //--------------------------------------------------------------------
-// Add Two Numbers (LC 2) - // serve para somar dois números guardados ao contrário em listas, dígito a dígito (342 → 2→4→3).
+// Add Two Numbers (LC 2) - // serve para somar dois números guardados ao contrário em linked lists, dígito a dígito (342 → 2→4→3).
 {
   const addTwoNumbers = (l1, l2) => {
-    // passo 1 — esqueleto: um dummy antes do resultado; tail = último nó; carry = o "vai-um"
+    // passo 1 — esqueleto: um dummy antes do resultado; tail = último node; carry = o "vai-um"
     const dummy = new ListNode(0);
     let tail = dummy;
     let carry = 0;
     let node1 = l1;
     let node2 = l2;
-    // passo 2 — continua enquanto houver dígitos OU vai-um (5 + 5 = 10 precisa de um nó extra no fim)
+    // passo 2 — continua enquanto houver dígitos OU vai-um (5 + 5 = 10 precisa de um node extra no fim)
     while (node1 !== null || node2 !== null || carry > 0) {
-      // passo 3 — o dígito de cada lista só existe se ainda houver nó; senão vale 0
+      // passo 3 — o dígito de cada linked list só existe se ainda houver node; senão vale 0
       let a = 0;
       let b = 0;
       if (node1 !== null) {
@@ -1638,17 +1638,17 @@ const toArray = (head) => {
 // nota2: tempo e espaço O(max(n, m)).
 
 // =====================================================================================
-// §14 ── ÁRVORES (médio) ──────────
+// §14 ── TREES (médio) ──────────
 // =====================================================================================
-// Usar quando o enunciado diz: `root`, "BST válida", "antepassado comum", "nível a nível", "vista da direita", "profundidade mínima"
-// Molde (DFS em árvore): a informação desce como parâmetro e sobe como valor de retorno.
+// Usar quando o enunciado diz: `root`, "BST válida", "common ancestor", "level a level", "vista da direita", "profundidade mínima"
+// Molde (DFS em tree): a informação desce como parameter e sobe como return value.
 //   function dfs(node, infoDeCima) {
-//     if (!node) return valorBase;
+//     if (!node) return baseValue;
 //     const left = dfs(node.left, ...);
 //     const right = dfs(node.right, ...);
 //     return combinar(node, left, right);
 //   }
-// Auxiliar: toTree([3,9,20,null,null,15,7]) constrói a árvore a partir do array do LeetCode, nível a nível.
+// Auxiliar: toTree([3,9,20,null,null,15,7]) constrói a tree a partir do array do LeetCode, level a level.
 class TreeNode {
   constructor(val, left = null, right = null) {
     this.val = val;
@@ -1683,20 +1683,20 @@ const toTree = (values) => {
 // Validate Binary Search Tree (LC 98) - // serve para verificar se todos os da esquerda são menores e todos os da direita maiores.
 {
   const isValidBST = (node, min = -Infinity, max = Infinity) => {
-    // passo 1 — esqueleto: árvore vazia é válida
+    // passo 1 — esqueleto: tree vazia é válida
     if (node === null) {
       return true;
     }
-    // passo 2 — o valor tem de estar estritamente dentro do intervalo (min, max): sem iguais
+    // passo 2 — o value tem de estar estritamente dentro do intervalo (min, max): sem iguais
     if (node.val <= min) {
       return false;
     }
     if (node.val >= max) {
       return false;
     }
-    // passo 3 — esquerda: o máximo passa a ser este nó
+    // passo 3 — esquerda: o máximo passa a ser este node
     const leftOk = isValidBST(node.left, min, node.val);
-    // direita: o mínimo passa a ser este nó
+    // direita: o mínimo passa a ser este node
     const rightOk = isValidBST(node.right, node.val, max);
     return leftOk && rightOk;
   };
@@ -1704,16 +1704,16 @@ const toTree = (values) => {
   isValidBST(toTree([5, 4, 6, null, null, 3, 7])); // result ==> false  (o 3 está à direita do 5: o intervalo dele é (5, 6))
   isValidBST(toTree([2, 1, 3])); // result ==> true
   isValidBST(toTree([5, 1, 4, null, null, 3, 6])); // result ==> false
-  isValidBST(toTree([2, 2, 2])); // result ==> false  (valores iguais)
+  isValidBST(toTree([2, 2, 2])); // result ==> false  (values iguais)
   isValidBST(null); // result ==> true
   isValidBST(toTree([-2147483648])); // result ==> true  (por isso -Infinity, e não um número)
   isValidBST(toTree([10, 5, 15, null, null, 6, 20])); // result ==> false  (o 6 está à direita do 10: o intervalo dele é (10, 15))
 }
-// nota: comparar só com os filhos diretos não chega: no primeiro exemplo o 3 < 6 passa, mas o 3 está na subárvore direita do 5. Passa (min, max) para baixo.
+// nota: comparar só com os children diretos não chega: no primeiro exemplo o 3 < 6 passa, mas o 3 está na subtree direita do 5. Passa (min, max) para baixo.
 // nota2: tempo O(n), espaço O(altura). A versão compacta com && nem visita a direita se a esquerda já falhou.
 
 //--------------------------------------------------------------------
-// Lowest Common Ancestor of a Binary Tree (LC 236) - // serve para achar o antepassado comum mais próximo de dois nós, p e q.
+// Lowest Common Ancestor of a Binary Tree (LC 236) - // serve para achar o common ancestor mais próximo de dois nodes, p e q.
 {
   const lowestCommonAncestor = (node, p, q) => {
     // passo 1 — parar: vazio, ou encontrou p ou q
@@ -1723,7 +1723,7 @@ const toTree = (values) => {
     // passo 2 — procurar dos dois lados
     const left = lowestCommonAncestor(node.left, p, q);
     const right = lowestCommonAncestor(node.right, p, q);
-    // passo 3 — p de um lado e q do outro: este nó é a resposta
+    // passo 3 — p de um lado e q do outro: este node é a resposta
     if (left !== null && right !== null) {
       return node;
     }
@@ -1754,28 +1754,28 @@ const toTree = (values) => {
   lowestCommonAncestor(lcaRoot, findNode(lcaRoot, 7), findNode(lcaRoot, 8)).val; // result ==> 3
   lowestCommonAncestor(lcaRoot, findNode(lcaRoot, 6), findNode(lcaRoot, 4)).val; // result ==> 5  (o 6 está à esquerda do 5 e o 4 à direita, por baixo do 2)
 }
-// nota: numa BST basta comparar valores (os dois menores → esquerda); aqui não há ordem, por isso procura-se dos dois lados.
+// nota: numa BST basta comparar values (os dois menores → esquerda); aqui não há ordem, por isso procura-se dos dois lados.
 // nota2: tempo O(n), espaço O(altura).
 
 //--------------------------------------------------------------------
-// Binary Tree Level Order Traversal (LC 102) - // serve para ler a árvore um nível de cada vez ([[3], [9, 20], [15, 7]]).
+// Binary Tree Level Order Traversal (LC 102) - // serve para ler a tree um level de cada vez ([[3], [9, 20], [15, 7]]).
 {
   const levelOrder = (root) => {
-    // passo 1 — esqueleto: árvore vazia dá []; a fila começa na raiz
+    // passo 1 — esqueleto: tree vazia dá []; a queue começa na root
     if (root === null) {
       return [];
     }
     const levels = [];
     const queue = [root];
-    // passo 2 — uma volta do while = um nível
+    // passo 2 — uma iteration do while = um level
     while (queue.length > 0) {
-      // passo 3 — só os nós que já estão na fila (este nível); os filhos ficam para a volta seguinte
+      // passo 3 — só os nodes que já estão na queue (este level); os children ficam para a iteration seguinte
       const size = queue.length;
       const level = [];
       for (let i = 0; i < size; i++) {
         const node = queue.shift();
         level.push(node.val);
-        // passo 4 — pôr os filhos na fila
+        // passo 4 — pôr os children na queue
         // esquerda
         if (node.left !== null) {
           queue.push(node.left);
@@ -1793,11 +1793,11 @@ const toTree = (values) => {
   levelOrder(toTree([3, 9, 20, null, null, 15, 7])); // result ==> [[3], [9, 20], [15, 7]]
   levelOrder(toTree([1])); // result ==> [[1]]
   levelOrder(null); // result ==> []
-  levelOrder(toTree([1, 2, null, 3])); // result ==> [[1], [2], [3]]  (árvore torta)
-  levelOrder(toTree([1, 2, 3])); // result ==> [[1], [2, 3]]  (a raiz, depois os dois filhos)
+  levelOrder(toTree([1, 2, null, 3])); // result ==> [[1], [2], [3]]  (tree torta)
+  levelOrder(toTree([1, 2, 3])); // result ==> [[1], [2, 3]]  (a root, depois os dois children)
 }
-// nota: o mesmo código resolve LC 199 Right Side View (o último de cada nível) e LC 103 Zigzag (inverter os níveis ímpares).
-// nota2: DFS desce até ao fundo de um ramo primeiro; para "nível a nível" usa BFS com uma fila. Tempo e espaço O(n).
+// nota: o mesmo código resolve LC 199 Right Side View (o último de cada level) e LC 103 Zigzag (inverter os levels ímpares).
+// nota2: DFS desce até ao fundo de um branch primeiro; para "level a level" usa BFS com uma queue. Tempo e espaço O(n).
 
 // =====================================================================================
 // §15 ── TABELA FINAL: SINAL NO ENUNCIADO → PADRÃO ──────────
@@ -1807,31 +1807,31 @@ const toTree = (values) => {
   ---------------------------------------------------------------------------------------------
   "subarray com soma K" (com negativos)                → prefix sum + Map                 §2
   "agrupar", "anagramas", "contar", "já vi isto?"      → Map / Set                        §2
-  "os k mais frequentes"                               → Map + baldes (ou sort)           §2
-  "ordenado", "par/trio com soma X"                    → dois ponteiros                   §3
-  "substring/subarray contíguo mais longo/curto"       → janela deslizante                §4
-  "todas as posições de um anagrama/permutação"        → janela FIXA + contagens          §4
-  "próximo maior/menor", "quantos dias até"            → pilha monótona                   §5
-  "parênteses", "expressão", "desfazer"                → pilha                            §5
-  "O(log n)", "ordenado mas rodado"                    → pesquisa binária                 §6
-  "menor velocidade/capacidade que consegue"           → pesquisa binária na resposta     §6
+  "os k mais frequentes"                               → Map + buckets (ou sort)          §2
+  "ordenado", "par/trio com soma X"                    → two pointers                     §3
+  "substring/subarray contíguo mais longo/curto"       → sliding window                   §4
+  "todas as posições de um anagrama/permutation"       → window FIXA + contagens          §4
+  "próximo maior/menor", "quantos dias até"            → monotonic stack                  §5
+  "parênteses", "expressão", "desfazer"                → stack                            §5
+  "O(log n)", "ordenado mas rodado"                    → binary search                    §6
+  "menor velocidade/capacidade que consegue"           → binary search na resposta        §6
   "intervalos", "reuniões", "sobrepostos"              → ordenar por início + juntar      §7
-  "grelha", "ilhas", "regiões"                         → DFS na grelha                    §8
+  "grid", "ilhas", "regiões"                           → DFS na grid                      §8
   "menos passos", "minutos até espalhar"               → BFS (várias origens)             §8
-  "pré-requisitos", "dependências", "ordem válida"     → grafo + Kahn (topológica)        §9
-  "todas as combinações/subconjuntos/permutações"      → backtracking                     §10
+  "pré-requisitos", "dependências", "ordem válida"     → graph + Kahn (topological sort)  §9
+  "todas as combinações/subsets/permutations"          → backtracking                     §10
   "k-ésimo maior", "top k", "sempre o mínimo"          → heap (ou sort)                   §11
-  "número de maneiras", "mín/máx de…", "é possível?"   → programação dinâmica             §12
-  "remover a contar do fim", "numa passagem" (lista)   → dummy + dois ponteiros           §13
-  "BST válida", "antepassado comum", "por níveis"      → DFS com limites / BFS            §14
+  "número de maneiras", "mín/máx de…", "é possível?"   → dynamic programming              §12
+  "remover a contar do fim", "numa passagem" (list)    → dummy + two pointers             §13
+  "BST válida", "common ancestor", "por levels"        → DFS com limites / BFS            §14
 
   O que o n permite (≈ 10^8 passos simples por segundo):
-    n ≤ 12         → O(n!)       permutações
-    n ≤ 20         → O(2^n)      subconjuntos / backtracking
+    n ≤ 12         → O(n!)       permutations
+    n ≤ 20         → O(2^n)      subsets / backtracking
     n ≤ 500        → O(n³)
     n ≤ 10^4       → O(n²)       dois for, DP 2D
-    n ≤ 10^6       → O(n log n)  sort, heap, pesquisa binária num ciclo
-    n ≤ 10^8       → O(n)        um ciclo, Map, dois ponteiros, janela
+    n ≤ 10^6       → O(n log n)  sort, heap, binary search num loop
+    n ≤ 10^8       → O(n)        um loop, Map, two pointers, window
     maior          → O(log n) ou O(1)
   ex.: "nums.length <= 10^5" → querem O(n) ou O(n log n); dois for dão timeout.
 
@@ -1853,16 +1853,16 @@ const toTree = (values) => {
   DIA 1 — Hash map (o mais importante para strings/arrays)
     49 Group Anagrams · 347 Top K Frequent · 128 Longest Consecutive Sequence
     + aquecimento fácil: 1 Two Sum, 242 Valid Anagram
-  DIA 2 — Prefix sum + dois ponteiros
+  DIA 2 — Prefix sum + two pointers
     560 Subarray Sum Equals K · 15 3Sum · 11 Container With Most Water
     + revisão: 49
-  DIA 3 — Janela deslizante (strings!)
+  DIA 3 — Sliding window (strings!)
     3 Longest Substring Without Repeating · 424 Longest Repeating Char Replacement · 438 Find All Anagrams
     + revisão: 560, 15
-  DIA 4 — Pilha + pesquisa binária + intervalos
+  DIA 4 — Stack + binary search + intervalos
     739 Daily Temperatures · 155 Min Stack · 33 Search in Rotated Sorted Array · 56 Merge Intervals
     + revisão: 3
-  DIA 5 — Grelha, grafos, listas e árvores
+  DIA 5 — Grid, graphs, linked lists e trees
     200 Number of Islands · 207 Course Schedule · 19 Remove Nth From End · 102 Level Order
     + revisão: 438, 56
   DIA 6 — DP + backtracking + heap

@@ -30,7 +30,7 @@
 
 - Para que serve: guardar €12,34 como `1234` cêntimos, sem os erros do `float` (`0.1 + 0.2 !== 0.3`).
 - Regra essencial: dinheiro = inteiro na unidade mínima **+ a moeda**. As casas decimais vêm da moeda (ISO 4217); nunca assumir 2.
-- O que guarda: `EXPONENT` — chave = código da moeda; valor = casas decimais. O valor é um `BigInt` / `int64` (ou uma biblioteca decimal: `decimal.js`, Go `shopspring/decimal`), lido de texto, nunca de um float.
+- O que guarda: `EXPONENT` — key = código da moeda; value = casas decimais. O value é um `BigInt` / `int64` (ou uma biblioteca decimal: `decimal.js`, Go `shopspring/decimal`), lido de uma string, nunca de um float.
 
 | Texto | Moeda | Casas | Depois (`toMinor`) |
 |-------|-------|-------|--------------------|
@@ -117,7 +117,7 @@
 
 <details><summary>Ver resposta</summary>
 
-É recusada ("não soma zero (−1000)") e nada é gravado. Um ledger desequilibrado é um bug provado.
+É recusada ("does not sum to zero (−1000)") e nada é gravado. Um ledger desequilibrado é um bug provado.
 
 </details>
 
@@ -162,7 +162,7 @@ Sim. 7000 não é menor que 7000, por isso há fundos; fica com 0 disponível.
 
 <details><summary>Ver resposta</summary>
 
-Erro "liquidação acima do autorizado": 3500 > 3000 retidos.
+Erro "settlement above authorised amount": 3500 > 3000 retidos.
 
 </details>
 
@@ -218,7 +218,7 @@ Void. Nada foi capturado, por isso só há uma retenção para libertar.
 
 - Para que serve: impedir a captura de uma autorização Visa feita na segunda-feira, se a loja só tentar na terça da semana seguinte.
 - Regra essencial: um passo só é válido se estiver na tabela de transições; uma autorização expirada conta como `expired`, que não tem saídas. Validade online (Stripe): Visa 7 dias CIT, 5 dias MIT (exatamente 4 d 18 h); Mastercard 7. Presencial: Visa 5 dias, Mastercard 2.
-- O que guarda: `TRANSITIONS` — chave = estado atual; valor = estados permitidos a seguir.
+- O que guarda: `TRANSITIONS` — key = estado atual; value = estados permitidos a seguir.
 
 | Estado | Pedido | Quando (validade 7 dias) | Estado efetivo | Depois |
 |--------|--------|--------------------------|----------------|--------|
@@ -246,14 +246,14 @@ Não. O estado efetivo é `expired`, que não tem saídas: a retenção já se l
 
 ### Idempotency key + reserva única
 
-- Para que serve: um duplo clique em "Pagar €10" envia dois `POST /charges` com a mesma chave → uma só cobrança.
-- Regra essencial: o cliente gera uma chave (UUID v4; na Stripe vai no header `Idempotency-Key`, até 255 caracteres). O servidor **reserva** a chave **antes** de cobrar; quem chega em segundo recebe 409 "em curso".
+- Para que serve: um duplo clique em "Pagar €10" envia dois `POST /charges` com a mesma key → uma só cobrança.
+- Regra essencial: o cliente gera uma key (UUID v4; na Stripe vai no header `Idempotency-Key`, até 255 caracteres). O servidor **reserva** a key **antes** de cobrar; quem chega em segundo recebe 409 "em curso".
 - O que guarda: tabela `idempotency_keys` — `key` (UNIQUE), `request_hash`, `state` (`in_progress` / `done`), `response`.
 
 ```sql
 INSERT INTO idempotency_keys (key, request_hash, state)
 VALUES ($1, $2, 'in_progress')
-ON CONFLICT (key) DO NOTHING;      -- 0 linhas = já existe → repetição ou 409
+ON CONFLICT (key) DO NOTHING;      -- 0 rows = já existe → repetição ou 409
 ```
 
 | Pedido | Linha `k1` antes | O que faz | Resposta | Cobranças |
@@ -261,43 +261,43 @@ ON CONFLICT (key) DO NOTHING;      -- 0 linhas = já existe → repetição ou 4
 | A | não existe | reserva e cobra | 201 | 1 |
 | B (ao mesmo tempo) | `in_progress` | não cobra | 409 | 1 |
 
-- Confusão possível: verificar-e-depois-inserir vs reservar — dois pedidos podem passar o "existe?" ao mesmo tempo; só o `UNIQUE` escolhe um vencedor.
-- Para recordar: reservar a chave antes do efeito.
-- Pergunta: se o pedido B usasse a chave `k2`, quantas cobranças haveria?
+- Confusão possível: verificar-e-depois-inserir vs reservar — dois requests podem passar o "existe?" ao mesmo tempo; só o `UNIQUE` escolhe um vencedor.
+- Para recordar: reservar a key antes do efeito.
+- Pergunta: se o request B usasse a key `k2`, quantas cobranças haveria?
 
 <details><summary>Ver resposta</summary>
 
-2. Chaves diferentes são pedidos diferentes.
+2. Keys diferentes são requests diferentes.
 
 </details>
 
-### Hash do pedido + resposta guardada + TTL
+### Hash do request + response guardada + TTL
 
-- Para que serve: o cliente perde a resposta e repete `k1`; recebe a mesma resposta sem nova cobrança.
-- Regra essencial: mesma chave + mesmo corpo → a resposta guardada (mesmo status + corpo). Mesma chave + corpo diferente → erro (a Stripe compara os parâmetros). A Stripe v1 guarda também respostas 500 e pode apagar chaves com ≥ 24 h (TTL).
-- O que guarda: `request_hash` = hash do corpo; `response` = status + corpo da primeira execução.
+- Para que serve: o cliente perde a response e repete `k1`; recebe a mesma response sem nova cobrança.
+- Regra essencial: mesma key + mesmo body → a response guardada (mesmo status + body). Mesma key + body diferente → erro (a Stripe compara os parâmetros). A Stripe v1 guarda também responses 500 e pode apagar keys com ≥ 24 h (TTL).
+- O que guarda: `request_hash` = hash do body; `response` = status + body da primeira execução.
 
 | Pedido | Linha `k1` antes | Resposta | Cobranças |
 |--------|------------------|----------|-----------|
 | `k1`, €10,00 (repetição) | `done` | 201 `{ chargeId: "ch_1" }` | 1 |
 | `k1`, €99,99 | `done` | 422 | 1 |
-| `k1` reutilizada 3 dias depois | apagada (TTL) | tratada como pedido novo | 2 |
+| `k1` reutilizada 3 dias depois | apagada (TTL) | tratada como request novo | 2 |
 
-- Confusão possível: 409 vs 422 — 409 = o mesmo pedido ainda está a correr (tenta depois); 422 = chave reutilizada com outro corpo (erro do cliente).
-- Para recordar: repetição devolve a mesma resposta; corpo diferente é recusado.
-- Pergunta: o corpo repetido tem os mesmos campos noutra ordem. Com `JSON.stringify` simples, que acontece?
+- Confusão possível: 409 vs 422 — 409 = o mesmo request ainda está a correr (tenta depois); 422 = key reutilizada com outro body (erro do cliente).
+- Para recordar: repetição devolve a mesma response; body diferente é recusado.
+- Pergunta: o body repetido tem os mesmos campos noutra ordem. Com `JSON.stringify` simples, que acontece?
 
 <details><summary>Ver resposta</summary>
 
-422: a ordem muda a string e portanto o hash. Em produção normaliza-se o corpo antes do hash.
+422: a ordem muda a string e portanto o hash. Em produção normaliza-se o body antes do hash.
 
 </details>
 
 ### Escrita atómica + idempotência natural
 
-- Para que serve: garantir que o efeito (lançamentos no ledger) e a resposta guardada nunca ficam desencontrados.
-- Regra essencial: os dois na **mesma** transação da BD — ou ficam os dois, ou nenhum. Se os dados já têm um id único, usar esse: `UNIQUE(provider_event_id)` nos webhooks, `UNIQUE(order_id)` nas cobranças.
-- O que guarda: `entries` (o efeito) e `idempotency_keys.response` (a resposta).
+- Para que serve: garantir que o efeito (lançamentos no ledger) e a response guardada nunca ficam desencontrados.
+- Regra essencial: os dois na **mesma** transação da DB — ou ficam os dois, ou nenhum. Se os dados já têm um id único, usar esse: `UNIQUE(provider_event_id)` nos webhooks, `UNIQUE(order_id)` nas cobranças.
+- O que guarda: `entries` (o efeito) e `idempotency_keys.response` (a response).
 
 ```sql
 BEGIN;
@@ -308,19 +308,19 @@ COMMIT;                                                           -- os dois ou 
 
 | Falha | Sem transação | Com transação |
 |-------|---------------|---------------|
-| Processo morre entre os dois passos | cobrado, chave ainda `in_progress` | nada gravado; repetir é seguro |
+| Processo morre entre os dois passos | cobrado, key ainda `in_progress` | nada gravado; repetir é seguro |
 
-- Confusão possível: a cobrança no PSP fica fora desta transação — por isso a mesma chave também vai para o PSP (§5).
-- Para recordar: efeito e resposta no mesmo `COMMIT`.
-- Pergunta: porque é que `UNIQUE(order_id)` dispensa uma chave à parte?
+- Confusão possível: a cobrança no PSP fica fora desta transação — por isso a mesma key também vai para o PSP (§5).
+- Para recordar: efeito e response no mesmo `COMMIT`.
+- Pergunta: porque é que `UNIQUE(order_id)` dispensa uma key à parte?
 
 <details><summary>Ver resposta</summary>
 
-Porque a encomenda já identifica o pedido: uma segunda cobrança da mesma encomenda falha no `INSERT`.
+Porque a encomenda já identifica o request: uma segunda cobrança da mesma encomenda falha no `INSERT`.
 
 </details>
 
-- Na entrevista: "Uma idempotency key com constraint única, reservada antes do efeito, com hash do pedido e resposta guardada para repetição."
+- Na entrevista: "Uma idempotency key com constraint única, reservada antes do efeito, com hash do request e response guardada para repetição."
 
 → `04-Payments.js` §4
 
@@ -341,19 +341,19 @@ Porque a encomenda já identifica o pedido: uma segunda cobrança da mesma encom
 | — | Suspeita de fraude, cartão roubado |
 
 - Confusão possível: 429 é 4xx mas é temporário ("estás a pedir demais").
-- Para recordar: uma recusa é uma resposta, não uma falha.
+- Para recordar: uma recusa é uma response, não uma falha.
 - Pergunta: `isRetryable({ status: 402, code: "card_declined" })`?
 
 <details><summary>Ver resposta</summary>
 
-`false`. O emissor respondeu "não"; repetir não muda a resposta.
+`false`. O emissor respondeu "não"; repetir não muda a response.
 
 </details>
 
 ### Backoff + jitter, numa só camada, com orçamento
 
 - Para que serve: 10 000 clientes falham ao mesmo tempo; sem jitter repetiam todos no mesmo instante.
-- Regra essencial: espera = `aleatório(0, min(teto, base · 2^n))` (full jitter). Repetir numa **só** camada: tentativas aninhadas multiplicam (AWS: 3 tentativas × 5 camadas = **243×** carga na BD). Orçamento (retry budget): um token bucket por cliente; sem tokens, sem retry.
+- Regra essencial: espera = `aleatório(0, min(teto, base · 2^n))` (full jitter). Repetir numa **só** camada: tentativas aninhadas multiplicam (AWS: 3 tentativas × 5 camadas = **243×** carga na DB). Orçamento (retry budget): um token bucket por cliente; sem tokens, sem retry.
 - O que guarda: `attempt` = n.º da tentativa; `base` = 100 ms; `cap` = 5000 ms.
 
 | Tentativa | `base · 2^n` | Com teto | `rand` | Espera |
@@ -374,18 +374,18 @@ Falha logo, sem repetir: não há tokens. Assim não acrescenta carga a quem est
 
 ### Resultado desconhecido
 
-- Para que serve: o PSP cobra a encomenda 42, mas a resposta perde-se num timeout.
-- Regra essencial: timeout ≠ falha. Antes de repetir, consultar o PSP com a **mesma** chave (`psp.find(key)`). Se não for possível, marcar `unknown` e deixar a reconciliação (§8) decidir.
-- O que guarda: `psp.charges` — chave = chave do pedido (`"order-42"`); valor = a cobrança.
+- Para que serve: o PSP cobra a encomenda 42, mas a response perde-se num timeout.
+- Regra essencial: timeout ≠ falha. Antes de repetir, consultar o PSP com a **mesma** key (`psp.find(key)`). Se não for possível, marcar `unknown` e deixar a reconciliação (§8) decidir.
+- O que guarda: `psp.charges` — key = key do request (`"order-42"`); value = a cobrança.
 
 | Tentativa | O que faz | `psp.charges` | Resultado |
 |-----------|-----------|---------------|-----------|
 | 0 | `charge` | `order-42 → ch_1` | timeout (mas cobrou!) |
 | 1 | `find("order-42")` | igual | `ch_1`, sem nova cobrança |
 
-- Confusão possível: "deu erro" vs "não sei" — o PSP pode ter cobrado e só a resposta se perdeu.
+- Confusão possível: "deu erro" vs "não sei" — o PSP pode ter cobrado e só a response se perdeu.
 - Para recordar: timeout = "ainda não sei".
-- Pergunta: sem o `find` e com um PSP que ignora a chave, quantas cobranças?
+- Pergunta: sem o `find` e com um PSP que ignora a key, quantas cobranças?
 
 <details><summary>Ver resposta</summary>
 
@@ -404,8 +404,8 @@ Falha logo, sem repetir: não há tokens. Assim não acrescenta carga a quem est
 ### Corrida no saldo (lost update) + update condicional
 
 - Para que serve: impedir que dois levantamentos de €30 de uma conta com €50 passem os dois (double-spend).
-- Regra essencial: a armadilha é ler → verificar no código → escrever; entre a leitura e a escrita o mundo mudou. Caso simples: deixar a BD verificar numa só linha — `UPDATE accounts SET balance = balance - 3000 WHERE id = $id AND balance >= 3000`; 0 linhas alteradas = recusado.
-- O que guarda: `acc.balance` = saldo partilhado; `read` = a cópia velha que cada pedido leu.
+- Regra essencial: a armadilha é ler → verificar no código → escrever; entre a leitura e a escrita o mundo mudou. Caso simples: deixar a DB verificar numa só row — `UPDATE accounts SET balance = balance - 3000 WHERE id = $id AND balance >= 3000`; 0 rows alteradas = recusado.
+- O que guarda: `acc.balance` = saldo partilhado; `read` = a cópia velha que cada request leu.
 
 | Passo | Pedido A | Pedido B | Saldo |
 |-------|----------|----------|-------|
@@ -413,36 +413,36 @@ Falha logo, sem repetir: não há tokens. Assim não acrescenta carga a quem est
 | verificar | 5000 ≥ 3000 | 5000 ≥ 3000 | 5000 |
 | escrever | 5000 − 3000 | 5000 − 3000 | 2000 (saíram €60, desceu €30) |
 
-- Confusão possível: mutex em Go (`sync.Mutex`) vs lock na BD — o mutex protege a memória de um processo; com 2 réplicas, cada uma tem o seu e os dois levantamentos passam. O lock vive na BD.
+- Confusão possível: mutex em Go (`sync.Mutex`) vs lock na DB — o mutex protege a memória de um processo; com 2 réplicas, cada uma tem o seu e os dois levantamentos passam. O lock vive na DB.
 - Para recordar: nunca verificar o saldo no código entre ler e escrever.
 - Pergunta: com o `UPDATE` condicional, o segundo levantamento de €30 vê que saldo?
 
 <details><summary>Ver resposta</summary>
 
-2000. O primeiro já escreveu; `2000 >= 3000` é falso, 0 linhas alteradas → recusado.
+2000. O primeiro já escreveu; `2000 >= 3000` é falso, 0 rows alteradas → recusado.
 
 </details>
 
 ### Escolher a ferramenta: version, FOR UPDATE, SERIALIZABLE, UNIQUE, um escritor
 
 - Para que serve: escolher a proteção certa para o tipo de conflito.
-- Regra essencial: a BD é o árbitro. Lock otimista: `UPDATE … WHERE version = $lida`; 0 linhas → reler e decidir de novo.
+- Regra essencial: a DB é o árbitro. Lock otimista: `UPDATE … WHERE version = $lida`; 0 rows → reler e decidir de novo.
 - O que guarda: `accounts.version` = contador que sobe a cada escrita.
 
 ```sql
 UPDATE accounts SET balance = $new, version = version + 1
-WHERE id = $id AND version = $read_version;   -- 0 linhas → conflito, reler
+WHERE id = $id AND version = $read_version;   -- 0 rows → conflito, reler
 ```
 
 | Situação | Ferramenta | Antes → depois |
 |----------|------------|----------------|
 | Conflitos raros | `version` (otimista) | A escreve v0→v1; B falha, relê 2000, recusa |
-| Muitos pedidos na mesma conta | `SELECT … FOR UPDATE` (trancar por ordem de id, evita deadlock) | B espera que A faça `COMMIT` |
-| Regra sobre várias linhas ("máx. €1000/dia em todas as contas") | `SERIALIZABLE`; erro Postgres `40001` → repetir a transação toda | a segunda transação falha e repete |
+| Muitos requests na mesma conta | `SELECT … FOR UPDATE` (trancar por ordem de id, evita deadlock) | B espera que A faça `COMMIT` |
+| Regra sobre várias rows ("máx. €1000/dia em todas as contas") | `SERIALIZABLE`; erro Postgres `40001` → repetir a transação toda | a segunda transação falha e repete |
 | "Só um pode ganhar" (um refund por pagamento) | `UNIQUE(payment_id)` | o 2.º `INSERT` falha |
-| Volume muito alto | um escritor por conta (fila/partição por `account_id`) **[inferido]** | a corrida deixa de existir |
+| Volume muito alto | um escritor por conta (queue/partição por `account_id`) **[inferido]** | a corrida deixa de existir |
 
-- Confusão possível: lock otimista vs `FOR UPDATE` — o otimista não bloqueia e repete em conflito; `FOR UPDATE` bloqueia a linha até ao fim da transação.
+- Confusão possível: lock otimista vs `FOR UPDATE` — o otimista não bloqueia e repete em conflito; `FOR UPDATE` bloqueia a row até ao fim da transação.
 - Para recordar: a versão diz se alguém chegou primeiro.
 - Pergunta: com `version`, dois levantamentos de €20 de €50 — quanto fica?
 
@@ -452,7 +452,7 @@ WHERE id = $id AND version = $read_version;   -- 0 linhas → conflito, reler
 
 </details>
 
-- Na entrevista: "A BD é o árbitro: update condicional, versão ou FOR UPDATE. Nunca verifico o saldo no código entre uma leitura e uma escrita."
+- Na entrevista: "A DB é o árbitro: update condicional, versão ou FOR UPDATE. Nunca verifico o saldo no código entre uma leitura e uma escrita."
 
 → `04-Payments.js` §6
 
@@ -480,7 +480,7 @@ COMMIT;   -- o relay lê a outbox e publica no Kafka
 
 - Confusão possível: outbox vs "publicar e depois gravar" — ao contrário também falha: evento enviado de um pagamento que nunca foi gravado.
 - Para recordar: evento e dados no mesmo `COMMIT`.
-- Pergunta: o relay publica e morre antes de marcar a linha como enviada. Que acontece?
+- Pergunta: o relay publica e morre antes de marcar a row como enviada. Que acontece?
 
 <details><summary>Ver resposta</summary>
 
@@ -496,10 +496,10 @@ Publica o mesmo evento outra vez quando voltar. É entrega at-least-once — o c
 
 | Chegada | `INSERT … ON CONFLICT DO NOTHING` | Efeito |
 |---------|-----------------------------------|--------|
-| `e1` (1.ª) | 1 linha | aplica |
-| `e1` (2.ª) | 0 linhas = já visto | ignora |
+| `e1` (1.ª) | 1 row | aplica |
+| `e1` (2.ª) | 0 rows = já visto | ignora |
 
-- Avançado: **ordem no Kafka** — chave = `account_id`; a ordem só vale dentro de uma partição. **Saga** — desfazer um fluxo de vários passos com **compensações** (refund, libertar a retenção), não com rollback: reter €300 → reservar o voo → emissão falha → cancelar a reserva e libertar a retenção. **Webhooks** — verificar a assinatura HMAC, deduplicar por id, responder 2xx depressa e processar de uma fila; podem chegar fora de ordem (`refunded` antes de `succeeded`): usar a máquina de estados (§3) e ignorar passos para trás, ou reler o objeto na API.
+- Avançado: **ordem no Kafka** — key = `account_id`; a ordem só vale dentro de uma partição. **Saga** — desfazer um fluxo de vários passos com **compensações** (refund, libertar a retenção), não com rollback: reter €300 → reservar o voo → emissão falha → cancelar a reserva e libertar a retenção. **Webhooks** — verificar a assinatura HMAC, deduplicar por id, responder 2xx depressa e processar de uma queue; podem chegar fora de ordem (`refunded` antes de `succeeded`): usar a máquina de estados (§3) e ignorar passos para trás, ou reler o object na API.
 - Confusão possível: registar o `event_id` fora da transação do efeito — se o efeito falhar, o evento fica "visto" e nunca é aplicado.
 - Para recordar: exactly-once = at-least-once + dedupe.
 - Pergunta: um webhook `refunded` chega antes de `succeeded`. Que faz a máquina de estados?
@@ -519,13 +519,13 @@ Aplica `refunded` se a transição for válida a partir do estado atual; quando 
 ### Reconciliação — comparar linha a linha
 
 - Para que serve: comparar o ledger com os relatórios do PSP e o extrato do banco; é a rede de segurança que apanha o que a idempotência e os retries falharam.
-- Regra essencial: linha a linha, por referência externa — nunca pelo total do dia. Diferenças vão para uma fila de exceções para humanos; nunca "acertar" um saldo à mão sem um lançamento.
+- Regra essencial: linha a linha, por referência externa — nunca pelo total do dia. Diferenças vão para uma queue de exceções para humanos; nunca "acertar" um saldo à mão sem um lançamento.
 - O que guarda: de cada lado, id externo (charge id, end-to-end id), valor, moeda e data.
 
 | PSP | Ledger | Resultado |
 |-----|--------|-----------|
 | `ch_1` €25,00 | `set-1` €25,00 | casado |
-| `ch_2` €10,00 | nada | fila de exceções |
+| `ch_2` €10,00 | nada | queue de exceções |
 | depósito líquido €24,30 | `set-1` €25,00 | lançar a comissão de €0,70 |
 
 | Passo | O que fazer |
@@ -641,7 +641,7 @@ Não. Muda o smart contract do produto (uma versão nova); as contas existentes 
 | Cancelamento + reembolso (Duffel) | Reembolso como compensação de uma saga | "O reembolso é um passo de compensação, não um rollback." |
 | Guarda de autorização tardia | Ciclo de vida da autorização; máquina de estados | "Capturar depois de expirar é uma transição ilegal." |
 | Retries aninhados | Tempestade de retries; orçamento; uma camada | "Retries aninhados multiplicam a carga; passei-os para uma camada." |
-| Hotfix "cobrado N, entregue N" | Idempotência + cobrança e entrega atómicas | "Uma chave liga cobrança e entrega; um retry não duplica nenhuma." |
+| Hotfix "cobrado N, entregue N" | Idempotência + cobrança e entrega atómicas | "Uma key liga cobrança e entrega; um retry não duplica nenhuma." |
 
 - Regra: conta a história real por palavras tuas; usa a coluna "Conceito" para dar nome ao padrão.
 - Go vs TypeScript: os mesmos conceitos. Diz "em Go fazia o mesmo com `database/sql` e uma transação".
@@ -660,8 +660,8 @@ Tempestade de retries: tentativas em várias camadas multiplicam-se (3^5 = 243);
 
 | Pergunta | Resposta curta |
 |----------|----------------|
-| Como evitas cobrar duas vezes? | Idempotency key com `UNIQUE`, reservada antes da cobrança, passada ao PSP, resposta guardada para repetição. |
-| O PSP deu timeout. Repetes? | Não às cegas. Consulto por id/chave; se não for claro, marco `unknown` e a reconciliação decide. |
+| Como evitas cobrar duas vezes? | Idempotency key com `UNIQUE`, reservada antes da cobrança, passada ao PSP, response guardada para repetição. |
+| O PSP deu timeout. Repetes? | Não às cegas. Consulto por id/key; se não for claro, marco `unknown` e a reconciliação decide. |
 | Dois levantamentos ao mesmo tempo? | Update condicional ou `version`; com muita carga, `FOR UPDATE` ou um escritor por conta. |
 | Como guardas dinheiro? | Inteiro na unidade mínima + moeda; expoente ISO 4217; half-even; allocate do resto. |
 | Como corriges uma transação errada? | Um estorno: transação nova, oposta, com referência. O ledger é append-only. |
@@ -676,7 +676,7 @@ Tempestade de retries: tentativas em várias camadas multiplicam-se (3^5 = 243);
 
 <details><summary>Ver resposta</summary>
 
-"Reservada antes": a chave é gravada com `UNIQUE` antes de cobrar, senão dois pedidos simultâneos passam os dois.
+"Reservada antes": a key é gravada com `UNIQUE` antes de cobrar, senão dois requests simultâneos passam os dois.
 
 </details>
 
